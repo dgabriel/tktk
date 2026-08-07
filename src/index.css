@@ -1,0 +1,782 @@
+:root {
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif;
+  --black: #000;
+  --white: #fff;
+  --gray: #555;
+  --gray-light: #ccc;
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--white);
+  color: var(--black);
+  font-family: var(--serif);
+  font-size: 18px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--serif);
+  font-weight: normal;
+  margin: 0 0 0.4em;
+}
+
+h1 {
+  font-size: 2.25rem;
+  letter-spacing: -0.01em;
+}
+
+h2 {
+  font-size: 1.3rem;
+  border-bottom: 1px solid var(--black);
+  padding-bottom: 0.3em;
+  margin-top: 1.5em;
+}
+
+h3 {
+  font-size: 1.05rem;
+  margin-top: 1.5em;
+}
+
+p {
+  margin: 0 0 1em;
+}
+
+a {
+  color: var(--black);
+}
+
+button {
+  font-family: var(--serif);
+  font-size: inherit;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--black);
+}
+
+ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.page {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 4rem;
+  text-align: left;
+}
+
+.page-header {
+  border-bottom: 2px solid var(--black);
+  padding-bottom: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.signed-in-as {
+  font-size: 0.85rem;
+  color: var(--gray);
+  letter-spacing: 0.03em;
+  margin-bottom: 0.75em;
+}
+
+.instructor {
+  font-style: italic;
+  color: var(--gray);
+}
+
+/* notebook tabs */
+
+.tabs {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0.3rem;
+  padding-left: 0.25rem;
+  position: relative;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.tab {
+  font-family: var(--serif);
+  font-size: 0.95rem;
+  padding: 0.55rem 1.1rem 0.5rem;
+  border: 1px solid var(--black);
+  border-bottom: 1px solid var(--black);
+  border-radius: 6px 6px 0 0;
+  background: #ececec;
+  color: var(--gray);
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.tab:hover,
+.tab:focus-visible {
+  color: var(--black);
+}
+
+.tab--active {
+  background: var(--white);
+  color: var(--black);
+  border-bottom-color: var(--white);
+  margin-bottom: -1px;
+  position: relative;
+  z-index: 1;
+}
+
+.tab--pending {
+  border-style: dashed;
+  color: var(--gray-light);
+  background: transparent;
+}
+
+.tab--pending:hover,
+.tab--pending:focus-visible {
+  color: var(--gray);
+}
+
+.tab--pending.tab--active {
+  color: var(--gray);
+  background: var(--white);
+}
+
+.notebook-page {
+  border: 1px solid var(--black);
+  padding: 0.25rem 1.5rem 1rem;
+}
+
+.class-heading {
+  border-bottom: none;
+  margin-top: 1.25em;
+  font-size: 1rem;
+  color: var(--gray);
+  font-weight: bold;
+}
+
+.class-heading--pending {
+  color: var(--gray-light);
+}
+
+.empty-note {
+  padding: 1rem 0;
+  font-style: italic;
+  color: var(--gray);
+}
+
+.poem-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.poem-item {
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--gray-light);
+}
+
+.poem-item:first-child {
+  border-top: 1px solid var(--gray-light);
+}
+
+.poem-item--given {
+  opacity: 0.65;
+}
+
+.poem-given-badge {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: bold;
+  letter-spacing: 0.03em;
+  margin-bottom: 0.35em;
+}
+
+.poem-title {
+  display: block;
+  font-size: 1.2rem;
+  text-decoration: none;
+}
+
+.poem-title:hover,
+.poem-title:focus-visible {
+  text-decoration: underline;
+}
+
+.poem-author {
+  display: block;
+  margin-top: 0.35em;
+  font-style: italic;
+  color: var(--gray);
+  text-decoration: none;
+  padding: 0;
+}
+
+.poem-author:hover,
+.poem-author:focus-visible {
+  color: var(--black);
+  text-decoration: underline;
+}
+
+.back-link {
+  display: inline-block;
+  margin-bottom: 1.5rem;
+  text-decoration: none;
+  color: var(--gray);
+}
+
+.back-link:hover,
+.back-link:focus-visible {
+  color: var(--black);
+  text-decoration: underline;
+}
+
+/* feedback page */
+
+.page.feedback-page {
+  max-width: 960px;
+}
+
+.feedback-header {
+  margin: 1.5rem 0 2rem;
+}
+
+.feedback-layout {
+  display: flex;
+  gap: 2.5rem;
+  align-items: flex-start;
+}
+
+.poem-panel {
+  flex: 1 1 60%;
+  min-width: 0;
+}
+
+.poem-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.mode-switch {
+  display: inline-flex;
+  border: 1px solid var(--black);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.mode-switch-button {
+  padding: 0.3rem 0.9rem;
+  font-size: 0.85rem;
+  background: var(--white);
+  color: var(--black);
+}
+
+.mode-switch-button:not(:last-child) {
+  border-right: 1px solid var(--black);
+}
+
+.mode-switch-button--active {
+  background: var(--black);
+  color: var(--white);
+}
+
+.mode-switch-button:disabled {
+  color: var(--gray-light);
+  cursor: not-allowed;
+}
+
+.mode-switch-button--active:disabled {
+  background: var(--gray-light);
+  color: var(--white);
+}
+
+.mode-switch--small .mode-switch-button {
+  padding: 0.25rem 0.7rem;
+  font-size: 0.8rem;
+}
+
+.overlay-mode-buttons {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.markup-view-select {
+  border: 1px solid var(--black);
+  border-radius: 999px;
+  padding: 0.25rem 1.6rem 0.25rem 0.7rem;
+  font-size: 0.8rem;
+  font-family: var(--serif);
+  background: var(--white);
+  color: var(--black);
+}
+
+.overlay-clear-button {
+  font-size: 0.8rem;
+  color: var(--gray);
+  padding: 0.3rem 0.4rem;
+}
+
+.overlay-clear-button:hover,
+.overlay-clear-button:focus-visible {
+  color: var(--black);
+  text-decoration: underline;
+}
+
+.poem-body-wrapper {
+  position: relative;
+}
+
+.poem-body {
+  white-space: pre-wrap;
+  font-size: 1.1rem;
+  line-height: 1.8;
+  border: 1px solid var(--black);
+  padding: 1.5rem;
+  user-select: text;
+}
+
+.overlay-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  cursor: crosshair;
+}
+
+.overlay-canvas--erase {
+  cursor: cell;
+}
+
+.overlay-canvas--comment {
+  cursor: pointer;
+}
+
+.overlay-canvas--hidden {
+  display: none;
+}
+
+.overlay-stroke {
+  fill: none;
+  stroke: #b3261e;
+  stroke-width: 2.25;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.overlay-comment-dots {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.overlay-comment-dot {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  margin-left: -5px;
+  margin-top: -5px;
+  border-radius: 50%;
+  background: #b3261e;
+  border: 1.5px solid var(--white);
+}
+
+@keyframes overlay-dot-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.8);
+  }
+}
+
+.overlay-comment-dot--pulsing {
+  animation: overlay-dot-pulse 0.6s ease-in-out 2;
+}
+
+
+mark.highlight {
+  background: #d8ecfb;
+  color: inherit;
+  border-radius: 2px;
+  padding: 0 1px;
+  transition: background-color 0.6s ease;
+}
+
+.poem-body.highlights-off mark.highlight {
+  background: none;
+}
+
+mark.highlight.highlight--flash {
+  background: #a9d7f7;
+}
+
+mark.highlight.highlight--pending {
+  box-shadow: inset 0 -2px 0 0 var(--gray);
+}
+
+mark.highlight:not(.highlight--pending) {
+  cursor: pointer;
+}
+
+@keyframes highlight-pulse {
+  0%,
+  100% {
+    background-color: #d8ecfb;
+  }
+  50% {
+    background-color: #8fc9f2;
+  }
+}
+
+mark.highlight.highlight--pulsing {
+  animation: highlight-pulse 0.6s ease-in-out 2;
+}
+
+.comments-panel {
+  flex: 0 0 300px;
+  width: 300px;
+  position: sticky;
+  top: 1.5rem;
+}
+
+.comments-heading {
+  margin-top: 0;
+}
+
+.composer {
+  border: 1px solid var(--black);
+  padding: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.composer-excerpt {
+  font-style: italic;
+  color: var(--gray);
+  font-size: 0.9rem;
+  margin-bottom: 0.6em;
+}
+
+.composer-textarea {
+  width: 100%;
+  min-height: 5rem;
+  font-family: var(--serif);
+  font-size: 1rem;
+  border: 1px solid var(--gray-light);
+  padding: 0.5rem;
+  resize: vertical;
+}
+
+.composer-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.6rem;
+}
+
+.composer-save {
+  border: 1px solid var(--black);
+  padding: 0.35rem 0.9rem;
+}
+
+.composer-save:disabled {
+  color: var(--gray-light);
+  border-color: var(--gray-light);
+  cursor: not-allowed;
+}
+
+.composer-cancel {
+  color: var(--gray);
+}
+
+.composer-cancel:hover {
+  color: var(--black);
+  text-decoration: underline;
+}
+
+.comment-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.comment-card {
+  border-bottom: 1px solid var(--gray-light);
+  padding: 0.6rem 0.5rem;
+  margin: 0 -0.5rem;
+  border-radius: 3px;
+}
+
+@keyframes comment-card-pulse {
+  0%,
+  100% {
+    background-color: transparent;
+  }
+  50% {
+    background-color: #d8ecfb;
+  }
+}
+
+.comment-card--pulsing {
+  animation: comment-card-pulse 0.6s ease-in-out 2;
+}
+
+.comment-card-header {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  width: 100%;
+  text-align: left;
+}
+
+.comment-card-chevron {
+  flex: 0 0 auto;
+  color: var(--gray);
+}
+
+.comment-card-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  border: 1px solid var(--black);
+  border-radius: 50%;
+  font-size: 0.6rem;
+  font-style: normal;
+}
+
+/* Distinguishes a markup-mark comment from a text-highlight comment in the
+   sidebar list — same red as the markup ink/dots, vs. the default black
+   border used for highlight comments. Don't let both card types converge
+   on identical styling again; that's what prompted this in the first place. */
+.comment-card-avatar--markup {
+  border-color: #b3261e;
+  color: #b3261e;
+}
+
+.comment-card-excerpt {
+  font-style: italic;
+  font-size: 0.95rem;
+}
+
+.comment-card-excerpt--markup {
+  font-style: normal;
+}
+
+.comment-card-author {
+  font-style: italic;
+  color: var(--gray);
+  font-size: 0.85rem;
+  margin: 0 0 0.4em;
+}
+
+.comment-card-reply-count {
+  margin-left: auto;
+  flex: 0 0 auto;
+  font-size: 0.75rem;
+  font-style: normal;
+  color: var(--gray);
+}
+
+.comment-card-body {
+  margin-top: 0.5rem;
+  padding-left: 1.3rem;
+}
+
+.comment-card-text {
+  margin: 0 0 0.5em;
+}
+
+.comment-card-delete {
+  font-size: 0.8rem;
+  color: var(--gray);
+}
+
+.comment-card-delete:hover {
+  color: var(--black);
+  text-decoration: underline;
+}
+
+.reply-thread {
+  margin: 0.6em 0 0.8em;
+}
+
+.reply-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+  padding-left: 0.75rem;
+  border-left: 2px solid var(--gray-light);
+  margin-bottom: 0.5em;
+}
+
+.reply-item {
+  font-size: 0.9rem;
+}
+
+.reply-header {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.2em;
+}
+
+.reply-author {
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+.reply-text {
+  margin: 0;
+}
+
+.reply-delete {
+  font-size: 0.75rem;
+  color: var(--gray);
+  margin-top: 0.15em;
+}
+
+.reply-delete:hover,
+.reply-delete:focus-visible {
+  color: var(--black);
+  text-decoration: underline;
+}
+
+.reply-toggle {
+  font-size: 0.8rem;
+  color: var(--gray);
+}
+
+.reply-toggle:hover,
+.reply-toggle:focus-visible {
+  color: var(--black);
+  text-decoration: underline;
+}
+
+.reply-composer {
+  padding-left: 0.75rem;
+  border-left: 2px solid var(--gray-light);
+}
+
+.reply-textarea {
+  width: 100%;
+  min-height: 3rem;
+  font-family: var(--serif);
+  font-size: 0.9rem;
+  border: 1px solid var(--gray-light);
+  padding: 0.4rem;
+  resize: vertical;
+}
+
+@media (max-width: 760px) {
+  .feedback-layout {
+    flex-direction: column;
+  }
+
+  .comments-panel {
+    width: 100%;
+    flex: 1 1 auto;
+    position: static;
+  }
+}
+
+.tbd-note {
+  font-style: italic;
+  color: var(--gray);
+}
+
+/* modal */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  z-index: 10;
+}
+
+.modal {
+  position: relative;
+  background: var(--white);
+  border: 1px solid var(--black);
+  max-width: 420px;
+  width: 100%;
+  max-height: 85vh;
+  overflow-y: auto;
+  padding: 2rem 1.5rem 1.5rem;
+  text-align: center;
+}
+
+.modal-close {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.75rem;
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.modal-bio {
+  color: var(--gray);
+}
+
+.modal-workshops {
+  text-align: left;
+  display: inline-block;
+}
+
+.modal-workshops li {
+  padding: 0.3em 0;
+  border-bottom: 1px solid var(--gray-light);
+}
+
+.modal-workshops li:last-child {
+  border-bottom: none;
+}
+
+/* avatar */
+
+.avatar {
+  border: 1px solid var(--black);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem;
+  font-family: var(--serif);
+}
+
+.avatar--small {
+  width: 32px;
+  height: 32px;
+  font-size: 0.75rem;
+}
+
+.avatar--large {
+  width: 72px;
+  height: 72px;
+  font-size: 1.3rem;
+}
+
+@media (max-width: 480px) {
+  body {
+    font-size: 16px;
+  }
+  h1 {
+    font-size: 1.8rem;
+  }
+}
