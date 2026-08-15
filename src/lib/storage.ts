@@ -74,6 +74,15 @@ export function addComment(input: {
   return comment;
 }
 
+export function editComment(commentId: string, text: string): Comment | undefined {
+  const state = loadState();
+  const comment = state.comments.find((candidate) => candidate.id === commentId);
+  if (!comment) return undefined;
+  comment.text = text;
+  saveState(state);
+  return comment;
+}
+
 export function deleteComment(commentId: string): void {
   const state = loadState();
   state.comments = state.comments.filter((comment) => comment.id !== commentId);

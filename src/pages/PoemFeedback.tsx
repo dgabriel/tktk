@@ -8,6 +8,7 @@ import {
   addReply,
   deleteComment,
   deleteReply,
+  editComment,
   getCommentsForPoem,
   getRepliesForPoem,
   getState,
@@ -233,6 +234,12 @@ export function PoemFeedback() {
       el.classList.add("highlight--flash");
       window.setTimeout(() => el.classList.remove("highlight--flash"), 900);
     }
+  }
+
+  function handleEditComment(id: string, text: string) {
+    const updated = editComment(id, text);
+    if (!updated) return;
+    setComments((prev) => prev.map((comment) => (comment.id === id ? updated : comment)));
   }
 
   function handleDeleteComment(id: string) {
@@ -507,6 +514,7 @@ export function PoemFeedback() {
                 getAuthor={getAuthor}
                 onToggle={() => handleToggleComment(comment.id)}
                 onDelete={() => handleDeleteComment(comment.id)}
+                onEdit={(text) => handleEditComment(comment.id, text)}
                 onAddReply={(text) => handleAddReply(comment.id, text)}
                 onDeleteReply={handleDeleteReply}
                 onMouseEnter={() => {
@@ -531,6 +539,7 @@ export function PoemFeedback() {
                 getAuthor={getAuthor}
                 onToggle={() => handleToggleMarkupComment(stroke.id)}
                 onDelete={() => handleDeleteMarkupComment(stroke.id)}
+                onEdit={(text) => overlay.updateStrokeComment(stroke.id, text)}
                 onAddReply={(text) => handleAddReply(stroke.id, text)}
                 onDeleteReply={handleDeleteReply}
               />

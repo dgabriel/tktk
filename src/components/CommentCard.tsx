@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { ReplyThread } from "./ReplyThread";
 import type { Author, Comment, Reply } from "../types";
 
@@ -10,6 +11,7 @@ interface CommentCardProps {
   getAuthor: (authorId: string) => Author;
   onToggle: () => void;
   onDelete: () => void;
+  onEdit: (text: string) => void;
   onMouseEnter: () => void;
   onAddReply: (text: string) => void;
   onDeleteReply: (replyId: string) => void;
@@ -29,11 +31,27 @@ export function CommentCard({
   getAuthor,
   onToggle,
   onDelete,
+  onEdit,
   onMouseEnter,
   onAddReply,
   onDeleteReply,
   cardRef,
 }: CommentCardProps) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [draftText, setDraftText] = useState(comment.text);
+
+  function handleStartEdit() {
+    setDraftText(comment.text);
+    setIsEditing(true);
+  }
+
+  function handleSaveEdit() {
+    const trimmed = draftText.trim();
+    if (!trimmed) return;
+    onEdit(trimmed);
+    setIsEditing(false);
+  }
+
   return (
     <li
       ref={cardRef}
@@ -55,16 +73,42 @@ export function CommentCard({
       {expanded && (
         <div className="comment-card-body">
           <p className="comment-card-author">{author.name}</p>
-          <p className="comment-card-text">{comment.text}</p>
+          {isEditing ? (
+            <div className="composer">
+              <textarea
+                className="composer-textarea"
+                value={draftText}
+                onChange={(event) => setDraftText(event.target.value)}
+                autoFocus
+              />
+              <div className="composer-actions">
+                <button className="composer-save" onClick={handleSaveEdit} disabled={!draftText.trim()}>
+                  Save
+                </button>
+                <button className="composer-cancel" onClick={() => setIsEditing(false)}>
+                  Cancel
+                </button>
+              </div>
+            </div>
+          ) : (
+            <p className="comment-card-text">{comment.text}</p>
+          )}
           <ReplyThread
             replies={replies}
             getAuthor={getAuthor}
             onAddReply={onAddReply}
             onDeleteReply={onDeleteReply}
           />
-          <button className="comment-card-delete" onClick={onDelete}>
-            Delete comment
-          </button>
+          {!isEditing && (
+            <div className="comment-card-actions">
+              <button className="comment-card-action" onClick={handleStartEdit}>
+                Edit comment
+              </button>
+              <button className="comment-card-action" onClick={onDelete}>
+                Delete comment
+              </button>
+            </div>
+          )}
         </div>
       )}
     </li>

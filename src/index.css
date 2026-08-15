@@ -599,12 +599,17 @@ mark.highlight.highlight--pulsing {
   margin: 0 0 0.5em;
 }
 
-.comment-card-delete {
+.comment-card-actions {
+  display: flex;
+  gap: 0.9rem;
+}
+
+.comment-card-action {
   font-size: 0.8rem;
   color: var(--gray);
 }
 
-.comment-card-delete:hover {
+.comment-card-action:hover {
   color: var(--black);
   text-decoration: underline;
 }

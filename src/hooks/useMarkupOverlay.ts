@@ -229,6 +229,19 @@ export function useMarkupOverlay(poemId: string, enabled: boolean, viewAuthorId:
   }, []);
 
   // Callable for any stroke, not just the one currently open in the
+  // composer — this is what the sidebar list's "Edit comment" button uses,
+  // so a note can be edited directly from its card without first switching
+  // into markup mode and tapping the mark on the poem.
+  const updateStrokeComment = useCallback((strokeId: string, text: string) => {
+    const trimmed = text.trim();
+    if (!trimmed) return;
+    const updated = setStrokeComment(strokeId, trimmed);
+    if (updated) {
+      setStrokes((prev) => prev.map((stroke) => (stroke.id === updated.id ? updated : stroke)));
+    }
+  }, []);
+
+  // Callable for any stroke, not just the one currently open in the
   // composer — this is what the sidebar list's "Delete comment" button
   // uses, since it can target a stroke whose composer isn't open at all,
   // and belonging to any author (an instructor can remove any note).
@@ -268,5 +281,6 @@ export function useMarkupOverlay(poemId: string, enabled: boolean, viewAuthorId:
     cancelStrokeComment,
     deleteStrokeComment,
     removeStrokeComment,
+    updateStrokeComment,
   };
 }
