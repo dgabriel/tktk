@@ -1012,10 +1012,53 @@ mark.highlight.highlight--pulsing {
   outline: none;
 }
 
+.lesson-segment-kind {
+  flex: 0 0 auto;
+  font-family: var(--serif);
+  font-size: 0.8rem;
+  color: var(--gray);
+  border: 1px solid var(--gray-light);
+  padding: 0.2rem 0.3rem;
+}
+
 .lesson-segment-controls {
   display: flex;
   gap: 0.4rem;
   flex: 0 0 auto;
+}
+
+.lesson-assignment-fields {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem 1.2rem;
+  border: 1px solid var(--gray-light);
+  padding: 0.6rem 0.8rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.85rem;
+}
+
+.lesson-assignment-fields label {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  color: var(--gray);
+  font-style: italic;
+}
+
+.lesson-assignment-fields input {
+  font-family: var(--serif);
+  font-size: 0.85rem;
+  border: 1px solid var(--gray-light);
+  padding: 0.2rem 0.35rem;
+}
+
+.lesson-assignment-note {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: 0.78rem;
+  font-style: italic;
+  color: var(--gray-light);
 }
 
 .lesson-segment-delete {

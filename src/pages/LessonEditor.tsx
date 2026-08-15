@@ -44,6 +44,46 @@ function parseIntoSegments(raw: string): LessonSegment[] {
   }));
 }
 
+function formatIcsDate(date: Date): string {
+  return `${date.toISOString().replace(/[-:]/g, "").split(".")[0]}Z`;
+}
+
+function escapeIcsText(text: string): string {
+  return text.replace(/([,;])/g, "\\$1");
+}
+
+// No backend here to actually send reminder emails — this is the
+// functional stand-in for "optionally puts things on their calendars"
+// from the original ask: a real .ics file the instructor can download
+// and forward, or students can import once there's a student view.
+function downloadAssignmentIcs(segment: LessonSegment, workshopName: string) {
+  if (!segment.dueAt) return;
+  const dtStamp = formatIcsDate(new Date());
+  const dtStart = formatIcsDate(new Date(segment.dueAt));
+  const ics = [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//tktk//lesson assignment//EN",
+    "BEGIN:VEVENT",
+    `UID:${segment.id}@tktk`,
+    `DTSTAMP:${dtStamp}`,
+    `DTSTART:${dtStart}`,
+    `SUMMARY:${escapeIcsText(segment.heading || "Assignment")} — ${escapeIcsText(workshopName)}`,
+    "END:VEVENT",
+    "END:VCALENDAR",
+  ].join("\r\n");
+
+  const blob = new Blob([ics], { type: "text/calendar" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `${segment.heading || "assignment"}.ics`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
 export function LessonEditor() {
   const { classNumber: classNumberParam } = useParams<{ classNumber: string }>();
   const classNumber = Number(classNumberParam);
@@ -76,6 +116,20 @@ export function LessonEditor() {
 
   function handleHeadingChange(id: string, heading: string) {
     setSegments((prev) => prev.map((segment) => (segment.id === id ? { ...segment, heading } : segment)));
+  }
+
+  function handleKindChange(id: string, kind: "content" | "assignment") {
+    setSegments((prev) =>
+      prev.map((segment) =>
+        segment.id === id ? { ...segment, kind: kind === "content" ? undefined : kind } : segment,
+      ),
+    );
+  }
+
+  function handleAssignmentFieldChange(id: string, field: "startAt" | "dueAt", value: string) {
+    setSegments((prev) =>
+      prev.map((segment) => (segment.id === id ? { ...segment, [field]: value || undefined } : segment)),
+    );
   }
 
   function handleAddSegment() {
@@ -241,6 +295,16 @@ export function LessonEditor() {
                     onChange={(event) => handleHeadingChange(segment.id, event.target.value)}
                     placeholder="Segment heading"
                   />
+                  <select
+                    className="lesson-segment-kind"
+                    value={segment.kind ?? "content"}
+                    onChange={(event) =>
+                      handleKindChange(segment.id, event.target.value as "content" | "assignment")
+                    }
+                  >
+                    <option value="content">Content</option>
+                    <option value="assignment">Assignment</option>
+                  </select>
                   <div className="lesson-segment-controls">
                     <button
                       type="button"
@@ -267,6 +331,41 @@ export function LessonEditor() {
                     </button>
                   </div>
                 </div>
+
+                {segment.kind === "assignment" && (
+                  <div className="lesson-assignment-fields">
+                    <label>
+                      Start
+                      <input
+                        type="datetime-local"
+                        value={segment.startAt ?? ""}
+                        onChange={(event) =>
+                          handleAssignmentFieldChange(segment.id, "startAt", event.target.value)
+                        }
+                      />
+                    </label>
+                    <label>
+                      Due
+                      <input
+                        type="datetime-local"
+                        value={segment.dueAt ?? ""}
+                        onChange={(event) =>
+                          handleAssignmentFieldChange(segment.id, "dueAt", event.target.value)
+                        }
+                      />
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => downloadAssignmentIcs(segment, workshop.name)}
+                      disabled={!segment.dueAt}
+                    >
+                      Add due date to calendar (.ics)
+                    </button>
+                    <p className="lesson-assignment-note">
+                      Reminder emails aren&rsquo;t available in this prototype — no backend to send them.
+                    </p>
+                  </div>
+                )}
 
                 <div className="lesson-toolbar">
                   <button type="button" onMouseDown={(event) => handleFormat(event, "bold")}>

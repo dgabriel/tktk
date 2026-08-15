@@ -19,10 +19,16 @@ export interface Poem {
 // produced by a contentEditable region (bold/italic/underline/lists via
 // document.execCommand) — trusted content since only the instructor can
 // author it, same trust boundary as everything else in this prototype.
+// `kind` defaults to plain content when absent — only "assignment"
+// segments use startAt/dueAt (rendered as a downloadable .ics event;
+// there's no backend to actually send reminder emails, see LessonEditor).
 export interface LessonSegment {
   id: string;
   heading: string;
   html: string;
+  kind?: "content" | "assignment";
+  startAt?: string;
+  dueAt?: string;
 }
 
 // One per class session (`classNumber` matches Workshop.totalClasses'
