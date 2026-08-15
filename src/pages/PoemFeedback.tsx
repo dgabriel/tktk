@@ -264,6 +264,17 @@ export function PoemFeedback() {
     setReplies((prev) => prev.filter((reply) => reply.id !== replyId));
   }
 
+  // The overlay canvas sets touch-action: none over the whole poem body so
+  // it can capture draw/erase/comment gestures — which also blocks the
+  // native swipe-to-scroll a reader would otherwise use there. In markup
+  // mode that canvas covers most of the screen, so there's little room
+  // left to grab a native scroll. These buttons are the escape hatch
+  // (the stakeholder's own "ebook-style page forward" suggestion) — a
+  // fixed page-height jump rather than relying on a swipe gesture.
+  function scrollPoem(direction: 1 | -1) {
+    window.scrollBy({ top: direction * window.innerHeight * 0.75, behavior: "smooth" });
+  }
+
   function handleClearAllMarks() {
     // overlay.clearAll() only clears viewAuthorId's own strokes (never a
     // classmate's), so the reply cleanup here must match that same scope.
@@ -547,6 +558,27 @@ export function PoemFeedback() {
           </ul>
         </aside>
       </div>
+
+      {feedbackMode === "markup" && (
+        <div className="page-scroll-controls">
+          <button
+            type="button"
+            className="page-scroll-button"
+            onClick={() => scrollPoem(-1)}
+            aria-label="Scroll up"
+          >
+            ▲
+          </button>
+          <button
+            type="button"
+            className="page-scroll-button"
+            onClick={() => scrollPoem(1)}
+            aria-label="Scroll down"
+          >
+            ▼
+          </button>
+        </div>
+      )}
     </div>
   );
 }

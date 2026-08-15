@@ -375,6 +375,34 @@ ul {
   stroke-linejoin: round;
 }
 
+/* Fixed to the viewport (not the toolbar) so it stays reachable no matter
+   how far down the page you've scrolled — see tktk-41t. */
+.page-scroll-controls {
+  position: fixed;
+  right: 1.25rem;
+  bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  z-index: 10;
+}
+
+.page-scroll-button {
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 1px solid var(--black);
+  border-radius: 50%;
+  background: var(--white);
+  font-size: 1.1rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+.page-scroll-button:hover,
+.page-scroll-button:focus-visible {
+  background: var(--black);
+  color: var(--white);
+}
+
 .overlay-comment-dots {
   position: absolute;
   inset: 0;
