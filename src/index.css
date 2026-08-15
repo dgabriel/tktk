@@ -925,6 +925,17 @@ mark.highlight.highlight--pulsing {
   margin-bottom: 0.6rem;
 }
 
+.email-cleaner-result {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--gray-light);
+}
+
+.email-cleaner-output {
+  min-height: 3rem;
+  color: var(--black);
+}
+
 .lesson-segment-list {
   display: flex;
   flex-direction: column;

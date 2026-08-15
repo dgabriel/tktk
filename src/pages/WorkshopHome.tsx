@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { AuthorModal } from "../components/AuthorModal";
+import { EmailListCleaner } from "../components/EmailListCleaner";
 import { PoemListItem } from "../components/PoemListItem";
 import { getLessonForClass, getState } from "../lib/storage";
 import type { Student } from "../types";
@@ -47,6 +48,8 @@ export function WorkshopHome() {
           <span className="workshop-info-label">Meets</span> {workshop.meetingTime}
         </p>
       </div>
+
+      <EmailListCleaner />
 
       <nav className="tabs" aria-label="Class">
         {allClassNumbers.map((classNumber) => {
