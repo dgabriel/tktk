@@ -1,4 +1,4 @@
-import type { Comment, OverlayStroke, Poem, Reply, Student, Workshop } from "../types";
+import type { Comment, Lesson, OverlayStroke, Poem, Reply, Student, Workshop } from "../types";
 
 const WORKSHOP_NAME = 'What the "I" Doesn\'t See: Beyond the First-Person Lyric';
 
@@ -401,5 +401,33 @@ export const overlayStrokes: OverlayStroke[] = [
     ],
     comment: "'Carriage' and 'Gossamer' — two strange, textured nouns doing more work than any adjective could. That's the whole poem's material strangeness in two words.",
     createdAt: "2026-07-15T13:40:00.000Z",
+  },
+];
+
+// Only Class 1 has a lesson filled in — the rest are unwritten, same as how
+// classNumbersWithPoems on the home page tolerates classes with nothing
+// submitted yet. Content here is original prototype filler in the
+// instructor's voice, not transcribed from any real Brooklyn Poets lesson.
+export const lessons: Lesson[] = [
+  {
+    id: "lesson-class-1",
+    classNumber: 1,
+    segments: [
+      {
+        id: "lesson-class-1-welcome",
+        heading: "Welcome & housekeeping",
+        html: "<p>Good to have everyone here. A few logistics before we start: office hours are by request this term — just email me. Submit each week's poem by Sunday night so everyone has time to read before we meet.</p>",
+      },
+      {
+        id: "lesson-class-1-framing",
+        heading: "What the \"I\" doesn't see",
+        html: "<p>The title question for this workshop: what does a first-person speaker <em>fail</em> to notice about itself, and how does a poem let that blind spot show without stating it outright?</p><p>Keep this in mind as you read the poems on the syllabus — not \"what does the speaker say,\" but \"what does the speaker's saying accidentally reveal.\"</p>",
+      },
+      {
+        id: "lesson-class-1-exercise",
+        heading: "In-class exercise",
+        html: "<p>Write a short first-person passage from a speaker who is confident, even boastful, about something the reader can tell they're wrong about. Don't editorialize — let the gap do the work.</p>",
+      },
+    ],
   },
 ];

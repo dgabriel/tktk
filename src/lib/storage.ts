@@ -1,14 +1,15 @@
 import {
   comments as seedComments,
+  lessons as seedLessons,
   overlayStrokes as seedOverlayStrokes,
   poems as seedPoems,
   replies as seedReplies,
   students as seedStudents,
   workshop as seedWorkshop,
 } from "../data/seedData";
-import type { Comment, OverlayStroke, Poem, Reply, Student, Workshop } from "../types";
+import type { Comment, Lesson, OverlayStroke, Poem, Reply, Student, Workshop } from "../types";
 
-const STORAGE_KEY = "tktk:v13";
+const STORAGE_KEY = "tktk:v14";
 
 interface AppState {
   workshop: Workshop;
@@ -17,6 +18,7 @@ interface AppState {
   comments: Comment[];
   overlayStrokes: OverlayStroke[];
   replies: Reply[];
+  lessons: Lesson[];
   currentUser: { username: string; fullName: string };
 }
 
@@ -32,6 +34,7 @@ function loadState(): AppState {
     comments: seedComments,
     overlayStrokes: seedOverlayStrokes,
     replies: seedReplies,
+    lessons: seedLessons,
     currentUser: { username: "scha", fullName: "Sam Cha" },
   };
   localStorage.setItem(STORAGE_KEY, JSON.stringify(initial));
@@ -173,4 +176,17 @@ export function deleteReply(replyId: string): void {
   const state = loadState();
   state.replies = state.replies.filter((reply) => reply.id !== replyId);
   saveState(state);
+}
+
+export function getLessonForClass(classNumber: number): Lesson | undefined {
+  return loadState().lessons.find((lesson) => lesson.classNumber === classNumber);
+}
+
+export function saveLesson(lesson: Lesson): Lesson {
+  const state = loadState();
+  const index = state.lessons.findIndex((candidate) => candidate.id === lesson.id);
+  if (index === -1) state.lessons.push(lesson);
+  else state.lessons[index] = lesson;
+  saveState(state);
+  return lesson;
 }

@@ -1,7 +1,8 @@
 import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { AuthorModal } from "../components/AuthorModal";
 import { PoemListItem } from "../components/PoemListItem";
-import { getState } from "../lib/storage";
+import { getLessonForClass, getState } from "../lib/storage";
 import type { Student } from "../types";
 
 export function WorkshopHome() {
@@ -26,6 +27,7 @@ export function WorkshopHome() {
   const poemsInClass = poems.filter((poem) => poem.classNumber === selectedClass);
   const awaitingPoems = poemsInClass.filter((poem) => poem.status === "awaiting_feedback");
   const givenPoems = poemsInClass.filter((poem) => poem.status === "feedback_given");
+  const hasLesson = Boolean(getLessonForClass(selectedClass));
 
   return (
     <div className="page">
@@ -63,6 +65,10 @@ export function WorkshopHome() {
       </nav>
 
       <div className="notebook-page">
+        <Link to={`/lessons/${selectedClass}`} className="lesson-link">
+          {hasLesson ? "View/edit lesson" : "Write lesson"} for Class {selectedClass} &rarr;
+        </Link>
+
         {isPending ? (
           <>
             <h2 className="class-heading class-heading--pending">Class {selectedClass}: pending</h2>

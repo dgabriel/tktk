@@ -15,6 +15,25 @@ export interface Poem {
   body: string;
 }
 
+// A single block of a lesson, in display order. `html` is rich text
+// produced by a contentEditable region (bold/italic/underline/lists via
+// document.execCommand) — trusted content since only the instructor can
+// author it, same trust boundary as everything else in this prototype.
+export interface LessonSegment {
+  id: string;
+  heading: string;
+  html: string;
+}
+
+// One per class session (`classNumber` matches Workshop.totalClasses'
+// numbering, same as Poem.classNumber) — not every class necessarily has a
+// Lesson yet, so callers look this up by class number and handle "none".
+export interface Lesson {
+  id: string;
+  classNumber: number;
+  segments: LessonSegment[];
+}
+
 export interface Workshop {
   name: string;
   instructor: string;

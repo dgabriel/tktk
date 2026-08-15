@@ -190,6 +190,20 @@ ul {
   color: var(--gray);
 }
 
+.lesson-link {
+  display: inline-block;
+  margin: 0.5rem 0 1rem;
+  font-style: italic;
+  color: var(--gray);
+  text-decoration: none;
+}
+
+.lesson-link:hover,
+.lesson-link:focus-visible {
+  color: var(--black);
+  text-decoration: underline;
+}
+
 .poem-list {
   display: flex;
   flex-direction: column;
@@ -835,5 +849,206 @@ mark.highlight.highlight--pulsing {
   }
   h1 {
     font-size: 1.8rem;
+  }
+}
+
+/* lesson editor */
+
+.page.lesson-page {
+  max-width: 960px;
+}
+
+.lesson-layout {
+  display: flex;
+  gap: 2.5rem;
+  align-items: flex-start;
+}
+
+.lesson-outline {
+  flex: 0 0 220px;
+  position: sticky;
+  top: 1.5rem;
+}
+
+.lesson-outline-heading {
+  margin-top: 0;
+  font-size: 1rem;
+}
+
+.lesson-outline-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+}
+
+.lesson-outline-link {
+  text-align: left;
+  color: var(--gray);
+}
+
+.lesson-outline-link:hover,
+.lesson-outline-link:focus-visible {
+  color: var(--black);
+  text-decoration: underline;
+}
+
+.lesson-main {
+  flex: 1 1 60%;
+  min-width: 0;
+}
+
+.lesson-import {
+  border: 1px solid var(--gray-light);
+  padding: 0.75rem 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.lesson-import summary {
+  cursor: pointer;
+  font-style: italic;
+  color: var(--gray);
+}
+
+.lesson-import-hint {
+  font-size: 0.85rem;
+  color: var(--gray);
+}
+
+.lesson-import-textarea {
+  width: 100%;
+  min-height: 6rem;
+  font-family: var(--serif);
+  font-size: 0.95rem;
+  border: 1px solid var(--gray-light);
+  padding: 0.5rem;
+  resize: vertical;
+  margin-bottom: 0.6rem;
+}
+
+.lesson-segment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.lesson-segment {
+  border: 1px solid var(--black);
+  padding: 1rem;
+}
+
+.lesson-segment-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.6rem;
+}
+
+.lesson-drag-handle {
+  cursor: grab;
+  color: var(--gray-light);
+  flex: 0 0 auto;
+}
+
+.lesson-segment-heading-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-family: var(--serif);
+  font-size: 1.05rem;
+  font-weight: bold;
+  border: none;
+  border-bottom: 1px solid transparent;
+  padding: 0.2rem 0;
+}
+
+.lesson-segment-heading-input:hover,
+.lesson-segment-heading-input:focus {
+  border-bottom-color: var(--gray-light);
+  outline: none;
+}
+
+.lesson-segment-controls {
+  display: flex;
+  gap: 0.4rem;
+  flex: 0 0 auto;
+}
+
+.lesson-segment-delete {
+  font-size: 0.8rem;
+  color: var(--gray);
+}
+
+.lesson-segment-delete:hover,
+.lesson-segment-delete:focus-visible {
+  color: var(--black);
+  text-decoration: underline;
+}
+
+.lesson-toolbar {
+  display: flex;
+  gap: 0.3rem;
+  margin-bottom: 0.5rem;
+}
+
+.lesson-toolbar button {
+  border: 1px solid var(--gray-light);
+  width: 2rem;
+  height: 2rem;
+  font-size: 0.85rem;
+}
+
+.lesson-toolbar button:hover,
+.lesson-toolbar button:focus-visible {
+  border-color: var(--black);
+}
+
+.lesson-editable {
+  min-height: 4rem;
+  padding: 0.4rem 0.1rem;
+  line-height: 1.6;
+}
+
+.lesson-editable:focus {
+  outline: none;
+}
+
+.lesson-editable p {
+  margin: 0 0 0.8em;
+}
+
+.lesson-add-segment {
+  margin-top: 1.5rem;
+  color: var(--gray);
+}
+
+.lesson-add-segment:hover,
+.lesson-add-segment:focus-visible {
+  color: var(--black);
+  text-decoration: underline;
+}
+
+.lesson-save-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--gray-light);
+}
+
+.lesson-saved-note {
+  font-size: 0.85rem;
+  font-style: italic;
+  color: var(--gray);
+}
+
+@media (max-width: 760px) {
+  .lesson-layout {
+    flex-direction: column;
+  }
+
+  .lesson-outline {
+    width: 100%;
+    flex: 1 1 auto;
+    position: static;
   }
 }
