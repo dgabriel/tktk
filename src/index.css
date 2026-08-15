@@ -454,6 +454,11 @@ mark.highlight.highlight--pulsing {
 
 .comments-heading {
   margin-top: 0;
+  /* A drag that starts here (e.g. trying to select text in the note
+     composer just below) would otherwise pull "Comments" itself into the
+     native selection — see tktk-0ln. It's chrome, not content, so it
+     shouldn't be selectable at all. */
+  user-select: none;
 }
 
 .composer {
@@ -467,6 +472,7 @@ mark.highlight.highlight--pulsing {
   color: var(--gray);
   font-size: 0.9rem;
   margin-bottom: 0.6em;
+  user-select: none;
 }
 
 .composer-textarea {
