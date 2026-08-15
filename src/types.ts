@@ -19,6 +19,8 @@ export interface Workshop {
   name: string;
   instructor: string;
   totalClasses: number;
+  location: string;
+  meetingTime: string;
 }
 
 // Resolved display info for whoever left a Comment/Reply — computed at

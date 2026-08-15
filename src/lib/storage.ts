@@ -8,7 +8,7 @@ import {
 } from "../data/seedData";
 import type { Comment, OverlayStroke, Poem, Reply, Student, Workshop } from "../types";
 
-const STORAGE_KEY = "tktk:v12";
+const STORAGE_KEY = "tktk:v13";
 
 interface AppState {
   workshop: Workshop;

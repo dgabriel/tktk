@@ -94,6 +94,24 @@ ul {
   color: var(--gray);
 }
 
+.workshop-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.5rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+  color: var(--gray);
+}
+
+.workshop-info-item {
+  margin: 0;
+}
+
+.workshop-info-label {
+  font-style: italic;
+  margin-right: 0.35em;
+}
+
 /* notebook tabs */
 
 .tabs {

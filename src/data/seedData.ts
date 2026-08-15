@@ -2,10 +2,15 @@ import type { Comment, OverlayStroke, Poem, Reply, Student, Workshop } from "../
 
 const WORKSHOP_NAME = 'What the "I" Doesn\'t See: Beyond the First-Person Lyric';
 
+// Placeholder, like the lorem-ipsum poem bodies below — real location/time
+// details weren't available when this prototype was seeded. Swap in the
+// actual workshop logistics when available; nothing else needs to change.
 export const workshop: Workshop = {
   name: WORKSHOP_NAME,
   instructor: "Sam Cha",
   totalClasses: 6,
+  location: "Location TBD",
+  meetingTime: "Meeting time TBD",
 };
 
 export const students: Student[] = [

@@ -37,6 +37,15 @@ export function WorkshopHome() {
         <p className="instructor">Instructor: {workshop.instructor}</p>
       </header>
 
+      <div className="workshop-info">
+        <p className="workshop-info-item">
+          <span className="workshop-info-label">Location</span> {workshop.location}
+        </p>
+        <p className="workshop-info-item">
+          <span className="workshop-info-label">Meets</span> {workshop.meetingTime}
+        </p>
+      </div>
+
       <nav className="tabs" aria-label="Class">
         {allClassNumbers.map((classNumber) => {
           const pending = !classNumbersWithPoems.has(classNumber);
