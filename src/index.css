@@ -858,6 +858,41 @@ mark.highlight.highlight--pulsing {
   max-width: 960px;
 }
 
+.lesson-schedule {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1.5rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--gray-light);
+}
+
+.lesson-schedule-label {
+  font-style: italic;
+  color: var(--gray);
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+}
+
+.lesson-schedule-input {
+  font-family: var(--serif);
+  font-size: 0.9rem;
+  border: 1px solid var(--gray-light);
+  padding: 0.25rem 0.4rem;
+}
+
+.lesson-schedule-status {
+  font-size: 0.85rem;
+  color: var(--gray);
+}
+
+.lesson-schedule-status--pending {
+  color: #b3261e;
+}
+
 .lesson-layout {
   display: flex;
   gap: 2.5rem;

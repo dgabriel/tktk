@@ -28,7 +28,8 @@ export function WorkshopHome() {
   const poemsInClass = poems.filter((poem) => poem.classNumber === selectedClass);
   const awaitingPoems = poemsInClass.filter((poem) => poem.status === "awaiting_feedback");
   const givenPoems = poemsInClass.filter((poem) => poem.status === "feedback_given");
-  const hasLesson = Boolean(getLessonForClass(selectedClass));
+  const lesson = getLessonForClass(selectedClass);
+  const lessonOpensInFuture = Boolean(lesson?.openAt) && new Date(lesson!.openAt!).getTime() > Date.now();
 
   return (
     <div className="page">
@@ -69,8 +70,13 @@ export function WorkshopHome() {
 
       <div className="notebook-page">
         <Link to={`/lessons/${selectedClass}`} className="lesson-link">
-          {hasLesson ? "View/edit lesson" : "Write lesson"} for Class {selectedClass} &rarr;
+          {lesson ? "View/edit lesson" : "Write lesson"} for Class {selectedClass} &rarr;
         </Link>
+        {lessonOpensInFuture && (
+          <p className="lesson-schedule-status lesson-schedule-status--pending">
+            Not yet visible — opens {new Date(lesson!.openAt!).toLocaleString()}
+          </p>
+        )}
 
         {isPending ? (
           <>

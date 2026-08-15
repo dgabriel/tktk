@@ -54,6 +54,7 @@ export function LessonEditor() {
     return existing ? existing.segments : [];
   });
   const [lessonId] = useState(() => getLessonForClass(classNumber)?.id ?? generateId("lesson"));
+  const [openAt, setOpenAt] = useState(() => getLessonForClass(classNumber)?.openAt ?? "");
   const [importText, setImportText] = useState("");
   const [savedAt, setSavedAt] = useState<Date | null>(null);
 
@@ -137,13 +138,15 @@ export function LessonEditor() {
   function handleSave() {
     const synced = syncBodiesFromDom(segments);
     setSegments(synced);
-    saveLesson({ id: lessonId, classNumber, segments: synced });
+    saveLesson({ id: lessonId, classNumber, segments: synced, openAt: openAt || undefined });
     setSavedAt(new Date());
   }
 
   function scrollToSegment(id: string) {
     segmentRefs.current[id]?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
+
+  const opensInFuture = Boolean(openAt) && new Date(openAt).getTime() > Date.now();
 
   return (
     <div className="page lesson-page">
@@ -155,6 +158,25 @@ export function LessonEditor() {
         <h1>Class {classNumber} Lesson</h1>
         <p className="instructor">{workshop.name}</p>
       </header>
+
+      <div className="lesson-schedule">
+        <label className="lesson-schedule-label">
+          Opens at
+          <input
+            type="datetime-local"
+            className="lesson-schedule-input"
+            value={openAt}
+            onChange={(event) => setOpenAt(event.target.value)}
+          />
+        </label>
+        {openAt && (
+          <span className={`lesson-schedule-status${opensInFuture ? " lesson-schedule-status--pending" : ""}`}>
+            {opensInFuture
+              ? `Not yet visible — opens ${new Date(openAt).toLocaleString()}`
+              : `Open since ${new Date(openAt).toLocaleString()}`}
+          </span>
+        )}
+      </div>
 
       <div className="lesson-layout">
         <aside className="lesson-outline">

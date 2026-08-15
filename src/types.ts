@@ -28,10 +28,15 @@ export interface LessonSegment {
 // One per class session (`classNumber` matches Workshop.totalClasses'
 // numbering, same as Poem.classNumber) — not every class necessarily has a
 // Lesson yet, so callers look this up by class number and handle "none".
+// `openAt`, if set, is an ISO datetime for when the lesson becomes visible
+// to students — there's no student view yet (see PoemFeedback's
+// currentUser note in CLAUDE.md), so this only drives an instructor-facing
+// "opens at / already open" status for now, not real access gating.
 export interface Lesson {
   id: string;
   classNumber: number;
   segments: LessonSegment[];
+  openAt?: string;
 }
 
 export interface Workshop {
