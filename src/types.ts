@@ -56,6 +56,32 @@ export interface Reading {
   addedAt: string;
 }
 
+// "Optional" community extras (tktk-seb.3) — polls and office hours are
+// deliberately minimal since the stakeholder marked this whole group
+// optional, and this app is still instructor-only (no student view), so
+// there's no real self-serve student interaction yet for either.
+export interface PollOption {
+  id: string;
+  label: string;
+  voterIds: string[];
+}
+
+export interface Poll {
+  id: string;
+  classNumber: number;
+  question: string;
+  options: PollOption[];
+}
+
+// bookedByStudentId is instructor-assigned for now — there's no student
+// view yet for a participant to self-serve book a slot.
+export interface OfficeHoursSlot {
+  id: string;
+  startAt: string;
+  endAt: string;
+  bookedByStudentId?: string;
+}
+
 export interface Workshop {
   name: string;
   instructor: string;

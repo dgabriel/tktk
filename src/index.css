@@ -881,6 +881,24 @@ mark.highlight.highlight--pulsing {
   border-bottom: none;
 }
 
+.modal-full-profile-link {
+  display: inline-block;
+  margin-top: 1.25rem;
+  font-size: 0.85rem;
+  color: var(--gray);
+}
+
+.modal-full-profile-link:hover,
+.modal-full-profile-link:focus-visible {
+  color: var(--black);
+  text-decoration: underline;
+}
+
+.student-profile-page {
+  max-width: 420px;
+  text-align: center;
+}
+
 /* avatar */
 
 .avatar {
@@ -1202,4 +1220,140 @@ mark.highlight.highlight--pulsing {
     flex: 1 1 auto;
     position: static;
   }
+}
+
+/* polls */
+
+.polls-section {
+  margin-top: 1.25em;
+}
+
+.polls-question-input,
+.polls-option-input {
+  margin-bottom: 0.5rem;
+}
+
+.polls-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.poll-card {
+  border: 1px solid var(--gray-light);
+  padding: 0.75rem 1rem;
+}
+
+.poll-question-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+}
+
+.poll-question {
+  font-weight: bold;
+  margin: 0 0 0.6em;
+}
+
+.poll-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.poll-option-button {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  border: 1px solid var(--gray-light);
+  padding: 0.4rem 0.6rem;
+  overflow: hidden;
+  text-align: left;
+}
+
+.poll-option-button--voted {
+  border-color: var(--black);
+}
+
+.poll-option-bar {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: #ececec;
+  z-index: 0;
+  transition: width 0.3s ease;
+}
+
+.poll-option-label,
+.poll-option-count {
+  position: relative;
+  z-index: 1;
+}
+
+.poll-option-count {
+  font-size: 0.8rem;
+  color: var(--gray);
+  flex: 0 0 auto;
+}
+
+/* office hours */
+
+.office-hours-section {
+  margin-bottom: 1.5rem;
+}
+
+.office-hours-add-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0.75rem 0;
+}
+
+.office-hours-add-row label {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  font-style: italic;
+  color: var(--gray);
+  font-size: 0.85rem;
+}
+
+.office-hours-add-row input {
+  font-family: var(--serif);
+  font-size: 0.85rem;
+  border: 1px solid var(--gray-light);
+  padding: 0.2rem 0.35rem;
+}
+
+.office-hours-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.office-hours-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--gray-light);
+  font-size: 0.9rem;
+}
+
+.office-hours-item:first-child {
+  border-top: 1px solid var(--gray-light);
+}
+
+.office-hours-time {
+  flex: 1 1 auto;
+}
+
+.office-hours-item select {
+  font-family: var(--serif);
+  font-size: 0.85rem;
+  border: 1px solid var(--gray-light);
+  padding: 0.2rem 0.35rem;
 }

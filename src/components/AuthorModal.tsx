@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
+import { Link } from "react-router-dom";
 import type { Student } from "../types";
-import { Avatar } from "./Avatar";
+import { AuthorProfileContent } from "./AuthorProfileContent";
 
 interface AuthorModalProps {
   student: Student;
@@ -36,15 +37,10 @@ export function AuthorModal({ student, onClose }: AuthorModalProps) {
         >
           &times;
         </button>
-        <Avatar initials={student.initials} size="large" />
-        <h2 id="modal-title">{student.name}</h2>
-        <p className="modal-bio">{student.bio}</p>
-        <h3>Workshops</h3>
-        <ul className="modal-workshops">
-          {student.workshops.map((workshopName) => (
-            <li key={workshopName}>{workshopName}</li>
-          ))}
-        </ul>
+        <AuthorProfileContent student={student} headingId="modal-title" />
+        <Link to={`/students/${student.id}`} className="modal-full-profile-link">
+          View full profile &rarr;
+        </Link>
       </div>
     </div>
   );

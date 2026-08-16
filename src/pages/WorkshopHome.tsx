@@ -2,7 +2,9 @@ import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { AuthorModal } from "../components/AuthorModal";
 import { EmailListCleaner } from "../components/EmailListCleaner";
+import { OfficeHoursList } from "../components/OfficeHoursList";
 import { PoemListItem } from "../components/PoemListItem";
+import { PollsList } from "../components/PollsList";
 import { ReadingsList } from "../components/ReadingsList";
 import { getLessonForClass, getState } from "../lib/storage";
 import type { Student } from "../types";
@@ -52,6 +54,7 @@ export function WorkshopHome() {
       </div>
 
       <EmailListCleaner />
+      <OfficeHoursList />
 
       <nav className="tabs" aria-label="Class">
         {allClassNumbers.map((classNumber) => {
@@ -128,6 +131,7 @@ export function WorkshopHome() {
         )}
 
         <ReadingsList classNumber={selectedClass} />
+        <PollsList classNumber={selectedClass} />
       </div>
 
       {selectedStudent && (

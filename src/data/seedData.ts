@@ -1,4 +1,15 @@
-import type { Comment, Lesson, OverlayStroke, Poem, Reading, Reply, Student, Workshop } from "../types";
+import type {
+  Comment,
+  Lesson,
+  OfficeHoursSlot,
+  OverlayStroke,
+  Poem,
+  Poll,
+  Reading,
+  Reply,
+  Student,
+  Workshop,
+} from "../types";
 
 const WORKSHOP_NAME = 'What the "I" Doesn\'t See: Beyond the First-Person Lyric';
 
@@ -442,5 +453,35 @@ export const readings: Reading[] = [
     url: "https://www.poetryfoundation.org/poems/47652/because-i-could-not-stop-for-death-479",
     title: "Because I could not stop for Death — Poetry Foundation",
     addedAt: "2026-07-10T12:00:00.000Z",
+  },
+];
+
+// "Optional" extras (tktk-seb.3) — minimally seeded, one example each, with
+// a couple of simulated classmate votes on the poll so the aggregate view
+// has something to show beyond an empty state.
+export const polls: Poll[] = [
+  {
+    id: "poll-class-1-pace",
+    classNumber: 1,
+    question: "How was the pace of this class?",
+    options: [
+      { id: "poll-class-1-pace-slow", label: "Too slow", voterIds: [] },
+      { id: "poll-class-1-pace-good", label: "Just right", voterIds: ["lorde", "hughes"] },
+      { id: "poll-class-1-pace-fast", label: "Too fast", voterIds: ["crane"] },
+    ],
+  },
+];
+
+export const officeHoursSlots: OfficeHoursSlot[] = [
+  {
+    id: "office-hours-1",
+    startAt: "2026-08-19T15:00",
+    endAt: "2026-08-19T15:30",
+    bookedByStudentId: "dickinson",
+  },
+  {
+    id: "office-hours-2",
+    startAt: "2026-08-19T15:30",
+    endAt: "2026-08-19T16:00",
   },
 ];

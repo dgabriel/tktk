@@ -1,16 +1,29 @@
 import {
   comments as seedComments,
   lessons as seedLessons,
+  officeHoursSlots as seedOfficeHoursSlots,
   overlayStrokes as seedOverlayStrokes,
   poems as seedPoems,
+  polls as seedPolls,
   readings as seedReadings,
   replies as seedReplies,
   students as seedStudents,
   workshop as seedWorkshop,
 } from "../data/seedData";
-import type { Comment, Lesson, OverlayStroke, Poem, Reading, Reply, Student, Workshop } from "../types";
+import type {
+  Comment,
+  Lesson,
+  OfficeHoursSlot,
+  OverlayStroke,
+  Poem,
+  Poll,
+  Reading,
+  Reply,
+  Student,
+  Workshop,
+} from "../types";
 
-const STORAGE_KEY = "tktk:v15";
+const STORAGE_KEY = "tktk:v16";
 
 interface AppState {
   workshop: Workshop;
@@ -21,6 +34,8 @@ interface AppState {
   replies: Reply[];
   lessons: Lesson[];
   readings: Reading[];
+  polls: Poll[];
+  officeHoursSlots: OfficeHoursSlot[];
   currentUser: { username: string; fullName: string };
 }
 
@@ -38,6 +53,8 @@ function loadState(): AppState {
     replies: seedReplies,
     lessons: seedLessons,
     readings: seedReadings,
+    polls: seedPolls,
+    officeHoursSlots: seedOfficeHoursSlots,
     currentUser: { username: "scha", fullName: "Sam Cha" },
   };
   localStorage.setItem(STORAGE_KEY, JSON.stringify(initial));
@@ -228,4 +245,79 @@ export function deleteReading(readingId: string): void {
     (reply) => reply.poemId !== readingId && !orphanedCommentIds.has(reply.parentId),
   );
   saveState(state);
+}
+
+export function getPollsForClass(classNumber: number): Poll[] {
+  return loadState().polls.filter((poll) => poll.classNumber === classNumber);
+}
+
+export function addPoll(input: { classNumber: number; question: string; optionLabels: string[] }): Poll {
+  const state = loadState();
+  const poll: Poll = {
+    id: `poll-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    classNumber: input.classNumber,
+    question: input.question,
+    options: input.optionLabels.map((label, index) => ({
+      id: `poll-${Date.now()}-opt-${index}-${Math.random().toString(36).slice(2, 6)}`,
+      label,
+      voterIds: [],
+    })),
+  };
+  state.polls.push(poll);
+  saveState(state);
+  return poll;
+}
+
+export function deletePoll(pollId: string): void {
+  const state = loadState();
+  state.polls = state.polls.filter((poll) => poll.id !== pollId);
+  saveState(state);
+}
+
+// Single-choice voting: picking a new option in the same poll removes any
+// existing vote from the voter's other options first. Voting for the
+// option you already picked un-votes it (toggle).
+export function toggleVote(pollId: string, optionId: string, voterId: string): Poll | undefined {
+  const state = loadState();
+  const poll = state.polls.find((candidate) => candidate.id === pollId);
+  if (!poll) return undefined;
+  const target = poll.options.find((option) => option.id === optionId);
+  if (!target) return undefined;
+  const alreadyVoted = target.voterIds.includes(voterId);
+  for (const option of poll.options) {
+    option.voterIds = option.voterIds.filter((id) => id !== voterId);
+  }
+  if (!alreadyVoted) target.voterIds.push(voterId);
+  saveState(state);
+  return poll;
+}
+
+export function getOfficeHoursSlots(): OfficeHoursSlot[] {
+  return loadState().officeHoursSlots;
+}
+
+export function addOfficeHoursSlot(input: { startAt: string; endAt: string }): OfficeHoursSlot {
+  const state = loadState();
+  const slot: OfficeHoursSlot = {
+    id: `office-hours-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    ...input,
+  };
+  state.officeHoursSlots.push(slot);
+  saveState(state);
+  return slot;
+}
+
+export function deleteOfficeHoursSlot(slotId: string): void {
+  const state = loadState();
+  state.officeHoursSlots = state.officeHoursSlots.filter((slot) => slot.id !== slotId);
+  saveState(state);
+}
+
+export function setOfficeHoursBooking(slotId: string, studentId: string | undefined): OfficeHoursSlot | undefined {
+  const state = loadState();
+  const slot = state.officeHoursSlots.find((candidate) => candidate.id === slotId);
+  if (!slot) return undefined;
+  slot.bookedByStudentId = studentId;
+  saveState(state);
+  return slot;
 }
