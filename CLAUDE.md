@@ -20,14 +20,6 @@ Possible future scope beyond the feedback interface: manuscript editing and revi
 
 ## Commands
 
-```bash
-npm install       # install deps
-npm run dev       # start Vite dev server
-npm run build     # tsc -b && vite build (typecheck + production build)
-npm run preview   # preview a production build
-npm run lint       # oxlint (see .oxlintrc.json)
-```
-
 There is no test command; do not add one unless asked.
 
 ## Architecture
