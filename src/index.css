@@ -11,6 +11,12 @@
   box-sizing: border-box;
 }
 
+/* lets the lesson editor's outline/timeline "#seg-<id>" anchor links glide
+   to their target instead of jumping instantly */
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   margin: 0;
   background: var(--white);
@@ -156,64 +162,75 @@ ul {
   margin-right: 0.35em;
 }
 
-/* notebook tabs */
+/* class accordion */
 
-.tabs {
+.class-accordion {
   display: flex;
-  flex-wrap: nowrap;
-  gap: 0.3rem;
-  padding-left: 0.25rem;
-  position: relative;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
+  flex-direction: column;
+  border: 1px solid var(--black);
 }
 
-.tab {
+.class-accordion-item {
+  border-bottom: 1px solid var(--black);
+}
+
+.class-accordion-item:last-child {
+  border-bottom: none;
+}
+
+.class-accordion-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.7rem 1.25rem;
   font-family: var(--serif);
   font-size: 0.95rem;
-  padding: 0.55rem 1.1rem 0.5rem;
-  border: 1px solid var(--black);
-  border-bottom: 1px solid var(--black);
-  border-radius: 6px 6px 0 0;
-  background: #ececec;
+  text-align: left;
   color: var(--gray);
-  flex: 0 0 auto;
+  background: #ececec;
+}
+
+.class-accordion-header:hover,
+.class-accordion-header:focus-visible {
+  color: var(--black);
+}
+
+.class-accordion-item--open > .class-accordion-header {
+  color: var(--black);
+  font-weight: bold;
+  background: var(--white);
+}
+
+.class-accordion-item--pending .class-accordion-header {
+  color: var(--gray-light);
+}
+
+.class-accordion-item--pending .class-accordion-header:hover,
+.class-accordion-item--pending .class-accordion-header:focus-visible {
+  color: var(--gray);
+}
+
+.class-accordion-item--pending.class-accordion-item--open > .class-accordion-header {
+  color: var(--gray);
+}
+
+.class-accordion-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.tab:hover,
-.tab:focus-visible {
-  color: var(--black);
-}
-
-.tab--active {
-  background: var(--white);
-  color: var(--black);
-  border-bottom-color: var(--white);
-  margin-bottom: -1px;
-  position: relative;
-  z-index: 1;
-}
-
-.tab--pending {
-  border-style: dashed;
-  color: var(--gray-light);
-  background: transparent;
-}
-
-.tab--pending:hover,
-.tab--pending:focus-visible {
+.class-accordion-chevron {
+  flex: 0 0 auto;
   color: var(--gray);
 }
 
-.tab--pending.tab--active {
-  color: var(--gray);
-  background: var(--white);
-}
-
-.notebook-page {
-  border: 1px solid var(--black);
-  padding: 0.25rem 1.5rem 1rem;
+.class-accordion-body {
+  padding: 0.25rem 1.5rem 1.25rem;
+  border-top: 1px solid var(--gray-light);
 }
 
 .class-heading {
@@ -978,36 +995,13 @@ mark.highlight.highlight--pulsing {
 
 /* lesson editor */
 
-.page.lesson-page {
-  max-width: 960px;
+.lesson-editor {
+  min-height: 100vh;
 }
 
-.lesson-schedule {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.75rem 1.5rem;
-  margin-bottom: 1.5rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid var(--gray-light);
-}
-
-.lesson-schedule-label {
-  font-style: italic;
-  color: var(--gray);
-  font-size: 0.9rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5em;
-}
-
-.lesson-schedule-input {
-  font-family: var(--serif);
-  font-size: 0.9rem;
-  border: 1px solid var(--gray-light);
-  padding: 0.25rem 0.4rem;
-}
-
+/* used by WorkshopHome's "not yet visible" note under the lesson link,
+   kept separate from the lesson-status-pill system below since it renders
+   as a plain paragraph, not a dot+text pill */
 .lesson-schedule-status {
   font-size: 0.85rem;
   color: var(--gray);
@@ -1017,49 +1011,514 @@ mark.highlight.highlight--pulsing {
   color: #b3261e;
 }
 
-.lesson-layout {
+.lesson-titlebar {
+  position: sticky;
+  z-index: 15;
+  padding: 10px 20px;
+  background: var(--white);
+  border-bottom: 1px solid var(--gray-light);
+}
+
+.lesson-titlebar .back-link {
+  margin-bottom: 0;
+}
+
+.lesson-workspace {
   display: flex;
-  gap: 2.5rem;
   align-items: flex-start;
 }
 
+/* sidebar outline */
+
 .lesson-outline {
-  flex: 0 0 220px;
+  flex: 0 0 auto;
+  width: 280px;
   position: sticky;
-  top: 1.5rem;
+  align-self: flex-start;
+  overflow: hidden;
+  background: #f7f6f2;
+  border-right: 1px solid var(--black);
+  transition: width 0.2s ease;
+}
+
+.lesson-outline--collapsed {
+  width: 44px;
+}
+
+.lesson-outline-backdrop {
+  display: none;
+}
+
+/* Below this width the expanded (280px) sidebar overlays the content
+   instead of squeezing it — position:fixed pulls it out of the
+   .lesson-workspace flex row so .lesson-content reclaims the full width
+   underneath. The collapsed 44px rail is left as normal in-flow layout;
+   only the "slid out" state needs this. */
+@media (max-width: 760px) {
+  .lesson-outline-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 24;
+    background: rgba(0, 0, 0, 0.35);
+  }
+
+  .lesson-outline:not(.lesson-outline--collapsed) {
+    position: fixed;
+    left: 0;
+    z-index: 26;
+    box-shadow: 4px 0 16px rgba(0, 0, 0, 0.2);
+  }
+}
+
+.lesson-outline-inner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 280px;
+}
+
+.lesson-outline-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 0 0 auto;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--gray-light);
 }
 
 .lesson-outline-heading {
-  margin-top: 0;
-  font-size: 1rem;
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.lesson-outline-toggle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--gray-light);
+  border-radius: 6px;
+  background: var(--white);
+}
+
+.lesson-outline-toggle:hover,
+.lesson-outline-toggle:focus-visible {
+  border-color: var(--black);
+}
+
+.lesson-outline-toggle-bar {
+  width: 14px;
+  height: 2px;
+  background: #333;
+}
+
+.lesson-outline-rail {
+  display: flex;
+  justify-content: center;
+  padding-top: 14px;
+}
+
+.lesson-outline-body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 8px;
 }
 
 .lesson-outline-list {
   display: flex;
   flex-direction: column;
-  gap: 0.5em;
+}
+
+.lesson-outline-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+
+.lesson-outline-row--dragging {
+  position: relative;
+  z-index: 5;
+  background: #eae8e2;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+}
+
+.lesson-outline-row-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 8px 4px;
 }
 
 .lesson-outline-link {
-  text-align: left;
-  color: var(--gray);
+  overflow-wrap: break-word;
+  font-size: 0.9rem;
+  color: var(--black);
+  text-decoration: none;
 }
 
 .lesson-outline-link:hover,
 .lesson-outline-link:focus-visible {
+  text-decoration: underline;
+}
+
+.lesson-outline-kind {
+  font-size: 0.68rem;
+  font-style: italic;
+  color: var(--gray);
+}
+
+.lesson-outline-kind--assignment {
+  color: #b3261e;
+}
+
+.lesson-outline-kind--prompt {
+  color: var(--black);
+}
+
+/* shared drag handle (sidebar rows + segment cards) */
+
+.lesson-drag-handle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  cursor: grab;
+  touch-action: none;
+}
+
+.lesson-drag-handle:hover {
+  background: #ececec;
+}
+
+.lesson-drag-handle--outline {
+  width: 36px;
+  height: 36px;
+}
+
+.lesson-drag-dots {
+  display: grid;
+  grid-template-columns: repeat(2, 4px);
+  grid-auto-rows: 4px;
+  gap: 3px;
+}
+
+.lesson-drag-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #999;
+}
+
+/* shared kind-color dot (sidebar rows + timeline) */
+
+.lesson-kind-dot {
+  flex: 0 0 auto;
+  width: 8px;
+  height: 8px;
+  margin-top: 12px;
+  border-radius: 50%;
+}
+
+.lesson-kind-dot--content {
+  background: var(--gray-light);
+}
+
+.lesson-kind-dot--assignment {
+  background: #b3261e;
+}
+
+.lesson-kind-dot--prompt {
+  background: var(--black);
+}
+
+/* content column */
+
+.lesson-content {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.lesson-main {
+  padding: 12px 16px 0;
+}
+
+.lesson-header {
+  padding: 28px 16px 0;
+}
+
+.lesson-workshop-link {
+  display: inline-block;
+  margin-bottom: 6px;
+  font-style: italic;
+  font-size: 0.95rem;
+  color: var(--gray);
+  text-decoration: none;
+}
+
+.lesson-workshop-link:hover,
+.lesson-workshop-link:focus-visible {
   color: var(--black);
   text-decoration: underline;
 }
 
-.lesson-main {
-  flex: 1 1 60%;
-  min-width: 0;
+.lesson-header h1 {
+  margin: 0 0 4px;
+  font-size: 2rem;
 }
 
-.lesson-import {
+.lesson-title-input {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0 0 18px -6px;
+  padding: 4px 6px;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 1.05rem;
+  color: var(--gray);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 4px;
+}
+
+.lesson-title-input:hover {
+  border-color: var(--gray-light);
+}
+
+.lesson-title-input:focus {
+  outline: none;
+  background: var(--white);
+  border-color: var(--black);
+  color: var(--black);
+}
+
+.lesson-title-readonly {
+  margin: 0 0 18px;
+  font-style: italic;
+  color: var(--gray);
+}
+
+/* timeline */
+
+.lesson-timeline {
+  position: relative;
+  padding: 0 8px 20px;
+  overflow-x: auto;
+}
+
+.lesson-timeline-line {
+  position: absolute;
+  left: 28px;
+  right: 28px;
+  top: 14px;
+  height: 2px;
+  background: var(--gray-light);
+  z-index: 0;
+}
+
+.lesson-timeline-row {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.lesson-timeline-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  flex: 1 1 0;
+  min-width: 44px;
+  padding: 4px;
+  text-decoration: none;
+}
+
+.lesson-timeline-dot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 2px solid var(--white);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px var(--gray-light);
+  font-size: 0.72rem;
+}
+
+.lesson-timeline-dot--content {
+  background: var(--gray-light);
+  color: var(--gray);
+}
+
+.lesson-timeline-dot--assignment {
+  background: #b3261e;
+  color: var(--white);
+}
+
+.lesson-timeline-dot--prompt {
+  background: var(--black);
+  color: var(--white);
+}
+
+.lesson-timeline-label {
+  max-width: 96px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--gray);
+}
+
+/* schedule + save status rows */
+
+.lesson-schedule {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 24px;
+  padding: 16px 0;
+  border-top: 1px solid var(--gray-light);
+  border-bottom: 1px solid var(--gray-light);
+}
+
+.lesson-schedule-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  font-style: italic;
+  font-size: 0.9rem;
+  color: var(--gray);
+}
+
+.lesson-datetime-input {
+  min-height: 38px;
+  padding: 7px 8px;
+  font-family: var(--serif);
+  font-size: 0.9rem;
   border: 1px solid var(--gray-light);
-  padding: 0.75rem 1rem;
-  margin-bottom: 1.5rem;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.lesson-status-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--gray);
+}
+
+.lesson-status-pill--pending {
+  color: #b3261e;
+}
+
+.lesson-status-dot {
+  flex: 0 0 auto;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.lesson-save-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 0;
+}
+
+.lesson-save-status {
+  font-style: italic;
+}
+
+.lesson-save-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* pill buttons (shared: preview/save, import, add-stage, prompt runner) */
+
+.lesson-pill-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 18px;
+  font-family: var(--serif);
+  font-size: 0.88rem;
+  color: var(--black);
+  background: var(--white);
+  border: 1px solid var(--black);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.lesson-pill-button:hover,
+.lesson-pill-button:focus-visible {
+  background: #f0efe9;
+}
+
+.lesson-pill-button--primary {
+  color: var(--white);
+  background: var(--black);
+}
+
+.lesson-pill-button--primary:hover,
+.lesson-pill-button--primary:focus-visible {
+  background: #333;
+}
+
+.lesson-pill-button--small {
+  min-height: 38px;
+  padding: 0 14px;
+  font-size: 0.85rem;
+}
+
+.lesson-pill-button--dashed {
+  color: var(--gray);
+  background: var(--white);
+  border-style: dashed;
+  border-color: var(--gray-light);
+}
+
+.lesson-pill-button--dashed:hover,
+.lesson-pill-button--dashed:focus-visible {
+  color: var(--black);
+  border-color: var(--black);
+  background: var(--white);
+}
+
+.lesson-pill-button:disabled {
+  color: var(--gray-light);
+  border-color: var(--gray-light);
+  background: var(--white);
+  cursor: not-allowed;
+}
+
+/* paste & auto-segment import */
+
+.lesson-import {
+  margin-bottom: 22px;
+  padding: 12px 16px;
+  border: 1px solid var(--gray-light);
+  border-radius: 8px;
 }
 
 .lesson-import summary {
@@ -1076,12 +1535,13 @@ mark.highlight.highlight--pulsing {
 .lesson-import-textarea {
   width: 100%;
   min-height: 6rem;
+  margin-bottom: 0.6rem;
+  padding: 0.5rem;
   font-family: var(--serif);
   font-size: 0.95rem;
   border: 1px solid var(--gray-light);
-  padding: 0.5rem;
+  border-radius: 6px;
   resize: vertical;
-  margin-bottom: 0.6rem;
 }
 
 .email-cleaner-result {
@@ -1095,95 +1555,178 @@ mark.highlight.highlight--pulsing {
   color: var(--black);
 }
 
+/* segment cards */
+
 .lesson-segment-list {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 20px;
 }
 
 .lesson-segment {
+  background: var(--white);
   border: 1px solid var(--black);
-  padding: 1rem;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: box-shadow 0.15s;
+}
+
+.lesson-segment--dragging {
+  position: relative;
+  z-index: 5;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
 }
 
 .lesson-segment-header {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 0.6rem;
-  margin-bottom: 0.6rem;
+  gap: 10px;
+  padding: 12px 14px;
+  background: #f7f6f2;
 }
 
-.lesson-drag-handle {
-  cursor: grab;
-  color: var(--gray-light);
+.lesson-segment-header--expanded {
+  border-bottom: 1px solid var(--black);
+}
+
+.lesson-order-badge {
+  display: flex;
   flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #e7e5e0;
+  color: var(--gray);
+  font-size: 0.78rem;
+}
+
+.lesson-order-badge--stage {
+  margin-top: 2px;
 }
 
 .lesson-segment-heading-input {
-  flex: 1 1 auto;
-  min-width: 0;
+  flex: 1 1 180px;
+  min-width: 120px;
+  min-height: 40px;
+  padding: 8px;
   font-family: var(--serif);
   font-size: 1.05rem;
   font-weight: bold;
-  border: none;
-  border-bottom: 1px solid transparent;
-  padding: 0.2rem 0;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 4px;
 }
 
-.lesson-segment-heading-input:hover,
+.lesson-segment-heading-input:hover {
+  background: var(--white);
+  border-color: var(--gray-light);
+}
+
 .lesson-segment-heading-input:focus {
-  border-bottom-color: var(--gray-light);
   outline: none;
+  background: var(--white);
+  border-color: var(--black);
 }
 
 .lesson-segment-heading-readonly {
-  flex: 1 1 auto;
-  min-width: 0;
+  flex: 1 1 180px;
+  min-width: 120px;
+  margin: 0;
+  padding: 8px;
   font-size: 1.05rem;
   font-weight: bold;
-  margin: 0;
-  padding: 0.2rem 0;
 }
 
-.lesson-segment-kind {
+.lesson-kind-switch {
+  display: flex;
   flex: 0 0 auto;
+  overflow: hidden;
+  border: 1px solid var(--black);
+  border-radius: 999px;
+}
+
+.lesson-kind-switch-button {
+  flex: 1 1 auto;
+  height: 36px;
+  padding: 0 12px;
   font-family: var(--serif);
+  font-size: 0.78rem;
+  color: var(--gray);
+  background: var(--white);
+  white-space: nowrap;
+}
+
+.lesson-kind-switch-button:not(:last-child) {
+  border-right: 1px solid var(--black);
+}
+
+.lesson-kind-switch-button--active {
+  color: var(--white);
+  background: var(--black);
+}
+
+.lesson-segment-collapse-toggle {
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--gray-light);
+  border-radius: 6px;
+  background: var(--white);
+}
+
+.lesson-segment-collapse-toggle:hover,
+.lesson-segment-collapse-toggle:focus-visible {
+  border-color: var(--black);
+}
+
+.lesson-text-remove-button {
+  flex: 0 0 auto;
+  min-height: 36px;
   font-size: 0.8rem;
   color: var(--gray);
-  border: 1px solid var(--gray-light);
-  padding: 0.2rem 0.3rem;
 }
 
-.lesson-segment-controls {
-  display: flex;
-  gap: 0.4rem;
-  flex: 0 0 auto;
+.lesson-text-remove-button:hover,
+.lesson-text-remove-button:focus-visible {
+  color: var(--black);
+  text-decoration: underline;
 }
 
-.lesson-assignment-fields {
+/* No padding here — the rich-text field below sits flush against this
+   card's own edges instead of nesting inside a second inset box. The
+   assignment/prompt panels (which do want an inset, bordered look) supply
+   their own margin instead of relying on this. */
+.lesson-segment-body {
+  padding: 0;
+}
+
+/* assignment panel — flush against the card edges like the rich-text field
+   below it, not a second inset box; the bottom border is what separates it
+   from the rich-text field rather than a margin gap */
+
+.lesson-assignment-panel {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.6rem 1.2rem;
-  border: 1px solid var(--gray-light);
-  padding: 0.6rem 0.8rem;
-  margin-bottom: 0.75rem;
-  font-size: 0.85rem;
+  gap: 14px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--gray-light);
 }
 
-.lesson-assignment-fields label {
+.lesson-field-label {
   display: flex;
-  align-items: center;
-  gap: 0.4em;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 0.82rem;
   color: var(--gray);
-  font-style: italic;
 }
 
-.lesson-assignment-fields input {
-  font-family: var(--serif);
-  font-size: 0.85rem;
-  border: 1px solid var(--gray-light);
-  padding: 0.2rem 0.35rem;
+.lesson-assignment-readonly {
+  font-size: 0.88rem;
+  color: #333;
 }
 
 .lesson-assignment-note {
@@ -1194,185 +1737,259 @@ mark.highlight.highlight--pulsing {
   color: var(--gray-light);
 }
 
-.lesson-prompt-fields {
-  border: 1px solid var(--gray-light);
-  padding: 0.75rem 1rem;
-  margin-bottom: 0.75rem;
+/* prompt panel — flush against the card edges like the assignment panel
+   and rich-text field, not a second inset box. Rendered after the
+   rich-text field (the "main textarea"), so the divider is a top border
+   rather than the bottom border assignment-panel uses above richtext. */
+
+.lesson-prompt-panel {
+  padding: 10px 16px;
+  border-top: 1px solid var(--gray-light);
 }
 
-.prompt-stage-list {
+.lesson-prompt-hint-details {
+  margin-bottom: 10px;
+}
+
+.lesson-prompt-hint-details summary {
+  cursor: pointer;
+  font-style: italic;
+  font-size: 0.85rem;
+  color: var(--gray);
+}
+
+.lesson-prompt-hint-details > .lesson-import-hint {
+  margin: 6px 0 10px;
+}
+
+.lesson-stage-list {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  margin: 0.6rem 0;
+  gap: 10px;
+  margin-bottom: 12px;
 }
 
-.prompt-stage-row {
+.lesson-stage-row {
   display: flex;
-  align-items: center;
-  gap: 0.6rem;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 10px;
 }
 
-.prompt-stage-row-readonly {
-  font-size: 0.95rem;
-}
-
-.prompt-stage-index {
-  flex: 0 0 auto;
-  width: 1.4rem;
-  color: var(--gray);
-  font-style: italic;
-}
-
-.prompt-stage-textarea {
-  flex: 1 1 auto;
-  min-width: 0;
-  min-height: 2.2rem;
+.lesson-stage-textarea {
+  flex: 1 1 220px;
+  min-width: 160px;
+  min-height: 44px;
+  box-sizing: border-box;
+  padding: 8px;
   font-family: var(--serif);
-  font-size: 0.9rem;
+  font-size: 0.92rem;
   border: 1px solid var(--gray-light);
-  padding: 0.3rem 0.5rem;
+  border-radius: 6px;
   resize: vertical;
 }
 
-.prompt-stage-duration {
-  flex: 0 0 auto;
+.lesson-stage-duration {
   display: flex;
+  flex: 0 0 auto;
   align-items: center;
-  gap: 0.3em;
-  font-size: 0.8rem;
+  gap: 6px;
+}
+
+.lesson-stepper-button {
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--gray-light);
+  border-radius: 6px;
+  background: var(--white);
+}
+
+.lesson-stepper-button:hover,
+.lesson-stepper-button:focus-visible {
+  border-color: var(--black);
+}
+
+.lesson-stepper-value {
+  min-width: 52px;
+  text-align: center;
+  font-size: 0.85rem;
   color: var(--gray);
 }
 
-.prompt-stage-duration input {
-  width: 3.2rem;
-  font-family: var(--serif);
-  font-size: 0.85rem;
-  border: 1px solid var(--gray-light);
-  padding: 0.2rem 0.3rem;
+.lesson-stage-list-readonly {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0 0 4px;
+}
+
+.lesson-stage-list-readonly li {
+  font-size: 0.95rem;
 }
 
 .prompt-runner-wrapper {
-  margin-top: 0.75rem;
+  margin-top: 14px;
+  padding-top: 14px;
   border-top: 1px solid var(--gray-light);
-  padding-top: 0.75rem;
-}
-
-.prompt-runner-wrapper > button {
-  font-style: italic;
-  color: var(--gray);
+  text-align: center;
 }
 
 .prompt-runner {
   text-align: center;
-  margin-top: 0.75rem;
+  margin-top: 14px;
 }
 
 .prompt-runner-stage-label {
+  margin: 0 0 8px;
   font-size: 0.8rem;
   color: var(--gray);
-  margin: 0 0 0.5em;
 }
 
 .prompt-runner-text {
-  font-size: 1.3rem;
-  margin: 0 0 0.6em;
-  padding: 1.5rem;
+  margin: 0 0 10px;
+  padding: 20px;
+  min-height: 2.5em;
+  font-size: 1.25rem;
   border: 1px solid var(--black);
-  min-height: 3em;
+  border-radius: 8px;
 }
 
 .prompt-runner-timer {
+  margin: 0 0 10px;
   font-size: 2rem;
   font-variant-numeric: tabular-nums;
-  margin: 0 0 0.6em;
 }
 
 .prompt-runner-controls {
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
-  gap: 0.6rem;
+  gap: 10px;
 }
 
-.lesson-segment-delete {
-  font-size: 0.8rem;
-  color: var(--gray);
-}
+/* rich text field — flush against the segment card's own edges (the card's
+   border/radius/overflow:hidden already frame it) rather than being a
+   second bordered box nested inside .lesson-segment-body's padding */
 
-.lesson-segment-delete:hover,
-.lesson-segment-delete:focus-visible {
-  color: var(--black);
-  text-decoration: underline;
-}
-
-.lesson-toolbar {
+.lesson-richtext-toolbar {
   display: flex;
-  gap: 0.3rem;
-  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+  gap: 2px;
+  padding: 6px;
+  background: #f7f6f2;
+  border-bottom: 1px solid var(--gray-light);
 }
 
-.lesson-toolbar button {
-  border: 1px solid var(--gray-light);
-  width: 2rem;
-  height: 2rem;
+.lesson-richtext-toolbar button {
+  height: 36px;
+  padding: 0 10px;
+  border-radius: 6px;
   font-size: 0.85rem;
+  white-space: nowrap;
 }
 
-.lesson-toolbar button:hover,
-.lesson-toolbar button:focus-visible {
-  border-color: var(--black);
+.lesson-richtext-toolbar-icon {
+  width: 36px;
+  padding: 0;
 }
 
-.lesson-editable {
-  min-height: 4rem;
-  padding: 0.4rem 0.1rem;
+.lesson-richtext-toolbar button:hover,
+.lesson-richtext-toolbar button:focus-visible {
+  background: #ececec;
+}
+
+.lesson-richtext-toolbar-divider {
+  width: 1px;
+  margin: 4px;
+  background: var(--gray-light);
+}
+
+.lesson-richtext-editable {
+  min-height: 100px;
+  padding: 14px;
   line-height: 1.6;
 }
 
-.lesson-editable:focus {
+.lesson-richtext-editable:focus {
   outline: none;
+  box-shadow: inset 0 0 0 2px var(--black);
 }
 
-.lesson-editable p {
+.lesson-richtext-editable p {
   margin: 0 0 0.8em;
 }
 
+.lesson-richtext-editable[data-placeholder]:empty:before {
+  content: attr(data-placeholder);
+  font-style: italic;
+  color: var(--gray-light);
+}
+
 .lesson-add-segment {
-  margin-top: 1.5rem;
+  width: 100%;
+  margin-top: 22px;
+  padding: 18px;
+  min-height: 56px;
+  font-family: var(--serif);
+  font-size: 0.95rem;
   color: var(--gray);
+  background: var(--white);
+  border: 2px dashed var(--gray-light);
+  border-radius: 8px;
 }
 
 .lesson-add-segment:hover,
 .lesson-add-segment:focus-visible {
   color: var(--black);
-  text-decoration: underline;
+  border-color: var(--black);
 }
 
-.lesson-save-row {
+/* JSON export/import — deliberately low-key (plain small text, no pill
+   chrome) since this is a testing/backup utility, not a primary action */
+.lesson-json-tools {
   display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-top: 2rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--gray-light);
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 14px;
 }
 
-.lesson-saved-note {
-  font-size: 0.85rem;
-  font-style: italic;
+.lesson-json-tools-button {
+  font-size: 0.78rem;
   color: var(--gray);
 }
 
-@media (max-width: 760px) {
-  .lesson-layout {
-    flex-direction: column;
-  }
+.lesson-json-tools-button:hover,
+.lesson-json-tools-button:focus-visible {
+  color: var(--black);
+  text-decoration: underline;
+}
 
-  .lesson-outline {
-    width: 100%;
-    flex: 1 1 auto;
-    position: static;
-  }
+.lesson-json-tools-divider {
+  font-size: 0.78rem;
+  color: var(--gray-light);
+}
+
+.lesson-import-json-error {
+  flex-basis: 100%;
+  margin: 4px 0 0;
+  font-size: 0.8rem;
+  color: #b3261e;
+}
+
+/* visually hidden — triggered by the "Import JSON" button via a ref click,
+   same pattern as a native <label for> file picker without the native
+   chrome */
+.lesson-file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 /* polls */

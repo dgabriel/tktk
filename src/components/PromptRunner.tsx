@@ -75,18 +75,31 @@ export function PromptRunner({ stages }: { stages: PromptStage[] }) {
       <p className="prompt-runner-timer">{formatTime(remainingSeconds)}</p>
       <div className="prompt-runner-controls">
         {running ? (
-          <button type="button" onClick={() => setRunning(false)}>
+          <button
+            type="button"
+            className="lesson-pill-button lesson-pill-button--small lesson-pill-button--primary"
+            onClick={() => setRunning(false)}
+          >
             Pause
           </button>
         ) : (
-          <button type="button" onClick={() => setRunning(true)}>
+          <button
+            type="button"
+            className="lesson-pill-button lesson-pill-button--small lesson-pill-button--primary"
+            onClick={() => setRunning(true)}
+          >
             Start
           </button>
         )}
-        <button type="button" onClick={handleReset}>
+        <button type="button" className="lesson-pill-button lesson-pill-button--small" onClick={handleReset}>
           Reset
         </button>
-        <button type="button" onClick={handleRevealNext} disabled={stageIndex >= stages.length - 1}>
+        <button
+          type="button"
+          className="lesson-pill-button lesson-pill-button--small"
+          onClick={handleRevealNext}
+          disabled={stageIndex >= stages.length - 1}
+        >
           Reveal next stage now
         </button>
       </div>

@@ -52,6 +52,10 @@ export interface LessonSegment {
   startAt?: string;
   dueAt?: string;
   stages?: PromptStage[];
+  // Per-segment collapse state in the lesson editor, persisted so a long
+  // lesson reopens the way the instructor left it. Absent/false means
+  // expanded.
+  collapsed?: boolean;
 }
 
 // One per class session (`classNumber` matches Workshop.totalClasses'
