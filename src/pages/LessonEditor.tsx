@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import type { MouseEvent as ReactMouseEvent } from "react";
 import { Link, useParams } from "react-router-dom";
+import { PromptRunner } from "../components/PromptRunner";
 import { getLessonForClass, getState, saveLesson } from "../lib/storage";
 import type { LessonSegment } from "../types";
 
@@ -97,6 +98,7 @@ export function LessonEditor() {
   const [openAt, setOpenAt] = useState(() => getLessonForClass(classNumber)?.openAt ?? "");
   const [importText, setImportText] = useState("");
   const [savedAt, setSavedAt] = useState<Date | null>(null);
+  const [openRunnerIds, setOpenRunnerIds] = useState<Set<string>>(new Set());
 
   const bodyRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const segmentRefs = useRef<Record<string, HTMLLIElement | null>>({});
@@ -118,7 +120,7 @@ export function LessonEditor() {
     setSegments((prev) => prev.map((segment) => (segment.id === id ? { ...segment, heading } : segment)));
   }
 
-  function handleKindChange(id: string, kind: "content" | "assignment") {
+  function handleKindChange(id: string, kind: "content" | "assignment" | "prompt") {
     setSegments((prev) =>
       prev.map((segment) =>
         segment.id === id ? { ...segment, kind: kind === "content" ? undefined : kind } : segment,
@@ -130,6 +132,71 @@ export function LessonEditor() {
     setSegments((prev) =>
       prev.map((segment) => (segment.id === id ? { ...segment, [field]: value || undefined } : segment)),
     );
+  }
+
+  function handleAddStage(segmentId: string) {
+    setSegments((prev) =>
+      prev.map((segment) =>
+        segment.id === segmentId
+          ? {
+              ...segment,
+              stages: [...(segment.stages ?? []), { id: generateId("stage"), text: "", durationMinutes: 5 }],
+            }
+          : segment,
+      ),
+    );
+  }
+
+  function handleDeleteStage(segmentId: string, stageId: string) {
+    setSegments((prev) =>
+      prev.map((segment) =>
+        segment.id === segmentId
+          ? { ...segment, stages: (segment.stages ?? []).filter((stage) => stage.id !== stageId) }
+          : segment,
+      ),
+    );
+  }
+
+  function handleStageTextChange(segmentId: string, stageId: string, text: string) {
+    setSegments((prev) =>
+      prev.map((segment) =>
+        segment.id === segmentId
+          ? {
+              ...segment,
+              stages: (segment.stages ?? []).map((stage) => (stage.id === stageId ? { ...stage, text } : stage)),
+            }
+          : segment,
+      ),
+    );
+  }
+
+  function handleStageDurationChange(segmentId: string, stageId: string, durationMinutes: number) {
+    setSegments((prev) =>
+      prev.map((segment) =>
+        segment.id === segmentId
+          ? {
+              ...segment,
+              stages: (segment.stages ?? []).map((stage) =>
+                stage.id === stageId ? { ...stage, durationMinutes } : stage,
+              ),
+            }
+          : segment,
+      ),
+    );
+  }
+
+  // PromptRunner is only mounted while its wrapper is open, and remounts
+  // fresh (from stage 1, current durations) every time it opens — it
+  // captures its countdown state once on mount, so leaving it mounted
+  // while collapsed would let it go stale if stage durations are edited
+  // afterward.
+  function toggleRunner(segmentId: string) {
+    setOpenRunnerIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(segmentId)) next.delete(segmentId);
+      else next.add(segmentId);
+      return next;
+    });
   }
 
   function handleAddSegment() {
@@ -299,11 +366,12 @@ export function LessonEditor() {
                     className="lesson-segment-kind"
                     value={segment.kind ?? "content"}
                     onChange={(event) =>
-                      handleKindChange(segment.id, event.target.value as "content" | "assignment")
+                      handleKindChange(segment.id, event.target.value as "content" | "assignment" | "prompt")
                     }
                   >
                     <option value="content">Content</option>
                     <option value="assignment">Assignment</option>
+                    <option value="prompt">Writing prompt</option>
                   </select>
                   <div className="lesson-segment-controls">
                     <button
@@ -364,6 +432,66 @@ export function LessonEditor() {
                     <p className="lesson-assignment-note">
                       Reminder emails aren&rsquo;t available in this prototype — no backend to send them.
                     </p>
+                  </div>
+                )}
+
+                {segment.kind === "prompt" && (
+                  <div className="lesson-prompt-fields">
+                    <p className="lesson-import-hint">
+                      Each stage shows for its duration, then the next one reveals automatically when you
+                      run it live below.
+                    </p>
+                    <ul className="prompt-stage-list">
+                      {(segment.stages ?? []).map((stage, stageIndex) => (
+                        <li key={stage.id} className="prompt-stage-row">
+                          <span className="prompt-stage-index">{stageIndex + 1}</span>
+                          <textarea
+                            className="prompt-stage-textarea"
+                            value={stage.text}
+                            onChange={(event) =>
+                              handleStageTextChange(segment.id, stage.id, event.target.value)
+                            }
+                            placeholder={`Stage ${stageIndex + 1} prompt text…`}
+                          />
+                          <label className="prompt-stage-duration">
+                            <input
+                              type="number"
+                              min={1}
+                              value={stage.durationMinutes}
+                              onChange={(event) =>
+                                handleStageDurationChange(
+                                  segment.id,
+                                  stage.id,
+                                  Math.max(1, Number(event.target.value) || 1),
+                                )
+                              }
+                            />
+                            min
+                          </label>
+                          <button
+                            type="button"
+                            className="comment-card-action"
+                            onClick={() => handleDeleteStage(segment.id, stage.id)}
+                          >
+                            Delete
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                    <button type="button" onClick={() => handleAddStage(segment.id)}>
+                      + Add stage
+                    </button>
+
+                    {(segment.stages ?? []).length > 0 && (
+                      <div className="prompt-runner-wrapper">
+                        <button type="button" onClick={() => toggleRunner(segment.id)}>
+                          {openRunnerIds.has(segment.id) ? "Hide prompt runner" : "Run this prompt"}
+                        </button>
+                        {openRunnerIds.has(segment.id) && (
+                          <PromptRunner key={segment.id} stages={segment.stages ?? []} />
+                        )}
+                      </div>
+                    )}
                   </div>
                 )}
 
