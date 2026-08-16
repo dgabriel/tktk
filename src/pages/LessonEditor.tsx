@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 import type { MouseEvent as ReactMouseEvent } from "react";
 import { Link, useParams } from "react-router-dom";
 import { PromptRunner } from "../components/PromptRunner";
-import { getLessonForClass, getState, saveLesson } from "../lib/storage";
+import { getClassTitle, getLessonForClass, getState, saveLesson } from "../lib/storage";
 import type { LessonSegment } from "../types";
 
 function generateId(prefix: string): string {
@@ -277,6 +277,9 @@ export function LessonEditor() {
 
       <header className="feedback-header">
         <h1>Class {classNumber} Lesson</h1>
+        {getClassTitle(classNumber) && (
+          <p className="syllabus-class-title-caption">{getClassTitle(classNumber)}</p>
+        )}
         <p className="instructor">{workshop.name}</p>
       </header>
 

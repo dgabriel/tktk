@@ -1,4 +1,5 @@
 import type {
+  ClassSession,
   Comment,
   Lesson,
   OfficeHoursSlot,
@@ -485,3 +486,8 @@ export const officeHoursSlots: OfficeHoursSlot[] = [
     endAt: "2026-08-19T16:00",
   },
 ];
+
+// Sparse — only Class 1 has a custom title seeded, same convention as
+// `lessons`/`readings` above. The tabs stay "Class N" regardless; this is
+// only ever shown on the syllabus (and as a caption elsewhere) by design.
+export const classSessions: ClassSession[] = [{ classNumber: 1, title: "Introductions & the Blind Spot" }];

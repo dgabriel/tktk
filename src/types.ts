@@ -15,6 +15,16 @@ export interface Poem {
   body: string;
 }
 
+// A custom, syllabus-facing title for a class session — deliberately
+// separate from the "Class N" tab label (which stays generic/numbered by
+// design), and separate from Lesson, since you might want to name a class
+// on the syllabus before you've written its lesson content. Sparse: only
+// classes with a custom title have an entry here.
+export interface ClassSession {
+  classNumber: number;
+  title: string;
+}
+
 // One stage of a "prompt" LessonSegment — shown for `durationMinutes`
 // during a live class before the next stage auto-reveals. `text` is plain
 // text, not rich HTML, since PromptRunner displays it large/read-only

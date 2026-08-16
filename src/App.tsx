@@ -3,6 +3,7 @@ import { LessonEditor } from "./pages/LessonEditor";
 import { PoemFeedback } from "./pages/PoemFeedback";
 import { ReadingFeedback } from "./pages/ReadingFeedback";
 import { StudentProfile } from "./pages/StudentProfile";
+import { Syllabus } from "./pages/Syllabus";
 import { WorkshopHome } from "./pages/WorkshopHome";
 
 function App() {
@@ -14,6 +15,7 @@ function App() {
         <Route path="/lessons/:classNumber" element={<LessonEditor />} />
         <Route path="/readings/:readingId" element={<ReadingFeedback />} />
         <Route path="/students/:studentId" element={<StudentProfile />} />
+        <Route path="/syllabus" element={<Syllabus />} />
       </Routes>
     </BrowserRouter>
   );

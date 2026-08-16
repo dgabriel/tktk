@@ -1,4 +1,5 @@
 import {
+  classSessions as seedClassSessions,
   comments as seedComments,
   lessons as seedLessons,
   officeHoursSlots as seedOfficeHoursSlots,
@@ -11,6 +12,7 @@ import {
   workshop as seedWorkshop,
 } from "../data/seedData";
 import type {
+  ClassSession,
   Comment,
   Lesson,
   OfficeHoursSlot,
@@ -23,7 +25,7 @@ import type {
   Workshop,
 } from "../types";
 
-const STORAGE_KEY = "tktk:v16";
+const STORAGE_KEY = "tktk:v17";
 
 interface AppState {
   workshop: Workshop;
@@ -36,6 +38,7 @@ interface AppState {
   readings: Reading[];
   polls: Poll[];
   officeHoursSlots: OfficeHoursSlot[];
+  classSessions: ClassSession[];
   currentUser: { username: string; fullName: string };
 }
 
@@ -55,6 +58,7 @@ function loadState(): AppState {
     readings: seedReadings,
     polls: seedPolls,
     officeHoursSlots: seedOfficeHoursSlots,
+    classSessions: seedClassSessions,
     currentUser: { username: "scha", fullName: "Sam Cha" },
   };
   localStorage.setItem(STORAGE_KEY, JSON.stringify(initial));
@@ -320,4 +324,26 @@ export function setOfficeHoursBooking(slotId: string, studentId: string | undefi
   slot.bookedByStudentId = studentId;
   saveState(state);
   return slot;
+}
+
+export function getClassTitle(classNumber: number): string | undefined {
+  return loadState().classSessions.find((session) => session.classNumber === classNumber)?.title;
+}
+
+// Clearing the field back to empty removes the entry entirely, rather than
+// storing an empty-string title — keeps classSessions sparse (only classes
+// with a real custom title have one) and getClassTitle's `undefined`
+// meaningfully distinct from "explicitly set to blank."
+export function setClassTitle(classNumber: number, title: string): void {
+  const state = loadState();
+  const trimmed = title.trim();
+  const index = state.classSessions.findIndex((session) => session.classNumber === classNumber);
+  if (!trimmed) {
+    if (index !== -1) state.classSessions.splice(index, 1);
+  } else if (index === -1) {
+    state.classSessions.push({ classNumber, title: trimmed });
+  } else {
+    state.classSessions[index].title = trimmed;
+  }
+  saveState(state);
 }

@@ -6,7 +6,7 @@ import { OfficeHoursList } from "../components/OfficeHoursList";
 import { PoemListItem } from "../components/PoemListItem";
 import { PollsList } from "../components/PollsList";
 import { ReadingsList } from "../components/ReadingsList";
-import { getLessonForClass, getState } from "../lib/storage";
+import { getClassTitle, getLessonForClass, getState } from "../lib/storage";
 import type { Student } from "../types";
 
 export function WorkshopHome() {
@@ -33,6 +33,7 @@ export function WorkshopHome() {
   const givenPoems = poemsInClass.filter((poem) => poem.status === "feedback_given");
   const lesson = getLessonForClass(selectedClass);
   const lessonOpensInFuture = Boolean(lesson?.openAt) && new Date(lesson!.openAt!).getTime() > Date.now();
+  const classTitle = getClassTitle(selectedClass);
 
   return (
     <div className="page">
@@ -52,6 +53,10 @@ export function WorkshopHome() {
           <span className="workshop-info-label">Meets</span> {workshop.meetingTime}
         </p>
       </div>
+
+      <Link to="/syllabus" className="lesson-link">
+        View syllabus &rarr;
+      </Link>
 
       <EmailListCleaner />
       <OfficeHoursList />
@@ -73,6 +78,7 @@ export function WorkshopHome() {
       </nav>
 
       <div className="notebook-page">
+        {classTitle && <p className="syllabus-class-title-caption">{classTitle}</p>}
         <Link to={`/lessons/${selectedClass}`} className="lesson-link">
           {lesson ? "View/edit lesson" : "Write lesson"} for Class {selectedClass} &rarr;
         </Link>
