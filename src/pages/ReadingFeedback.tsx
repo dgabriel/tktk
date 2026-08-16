@@ -11,8 +11,8 @@ import {
   getCommentsForPoem,
   getReading,
   getRepliesForPoem,
-  getState,
 } from "../lib/storage";
+import { useViewAs } from "../lib/viewAs";
 import type { Comment, Reply } from "../types";
 
 // General, unanchored comments — there's no local text body to highlight
@@ -27,7 +27,7 @@ const GENERAL_COMMENT_EXCERPT = "General comment";
 
 export function ReadingFeedback() {
   const { readingId } = useParams<{ readingId: string }>();
-  const { currentUser } = getState();
+  const { effectiveUserId } = useViewAs();
   const reading = readingId ? getReading(readingId) : undefined;
 
   const [comments, setComments] = useState<Comment[]>(() => (reading ? getCommentsForPoem(reading.id) : []));
@@ -59,7 +59,7 @@ export function ReadingFeedback() {
     if (!draftText.trim()) return;
     const saved = addComment({
       poemId: reading!.id,
-      authorId: currentUser.username,
+      authorId: effectiveUserId,
       start: 0,
       end: 0,
       excerpt: GENERAL_COMMENT_EXCERPT,
@@ -83,7 +83,7 @@ export function ReadingFeedback() {
   }
 
   function handleAddReply(parentId: string, text: string) {
-    const saved = addReply({ poemId: reading!.id, parentId, authorId: currentUser.username, text });
+    const saved = addReply({ poemId: reading!.id, parentId, authorId: effectiveUserId, text });
     setReplies((prev) => [...prev, saved]);
   }
 

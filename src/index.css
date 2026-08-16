@@ -69,6 +69,50 @@ ul {
   padding: 0;
 }
 
+/* view-as toggle */
+
+.view-as-bar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 0.5rem 1.25rem;
+  border-bottom: 1px solid var(--gray-light);
+  font-size: 0.85rem;
+  position: sticky;
+  top: 0;
+  background: var(--white);
+  z-index: 20;
+}
+
+.view-as-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  color: var(--gray);
+  font-style: italic;
+}
+
+.view-as-select {
+  font-family: var(--serif);
+  font-size: 0.85rem;
+  font-style: normal;
+  color: var(--black);
+  border: 1px solid var(--gray-light);
+  padding: 0.2rem 0.4rem;
+}
+
+.view-as-bar--active {
+  background: var(--black);
+}
+
+.view-as-bar--active .view-as-label {
+  color: var(--white);
+}
+
+.view-as-bar--active .view-as-select {
+  border-color: var(--white);
+}
+
 .page {
   max-width: 640px;
   margin: 0 auto;
@@ -1092,6 +1136,15 @@ mark.highlight.highlight--pulsing {
   outline: none;
 }
 
+.lesson-segment-heading-readonly {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 1.05rem;
+  font-weight: bold;
+  margin: 0;
+  padding: 0.2rem 0;
+}
+
 .lesson-segment-kind {
   flex: 0 0 auto;
   font-family: var(--serif);
@@ -1158,6 +1211,10 @@ mark.highlight.highlight--pulsing {
   display: flex;
   align-items: center;
   gap: 0.6rem;
+}
+
+.prompt-stage-row-readonly {
+  font-size: 0.95rem;
 }
 
 .prompt-stage-index {
@@ -1447,6 +1504,12 @@ mark.highlight.highlight--pulsing {
   flex: 1 1 auto;
 }
 
+.office-hours-status {
+  font-size: 0.85rem;
+  color: var(--gray);
+  font-style: italic;
+}
+
 .office-hours-item select {
   font-family: var(--serif);
   font-size: 0.85rem;
@@ -1508,6 +1571,12 @@ mark.highlight.highlight--pulsing {
   outline: none;
 }
 
+.syllabus-title-readonly {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0.2rem 0;
+}
+
 .syllabus-lesson-link {
   flex: 0 0 auto;
   font-size: 0.85rem;
@@ -1529,7 +1598,8 @@ mark.highlight.highlight--pulsing {
     width: auto;
   }
 
-  .syllabus-title-input {
+  .syllabus-title-input,
+  .syllabus-title-readonly {
     flex-basis: 100%;
     order: 1;
   }

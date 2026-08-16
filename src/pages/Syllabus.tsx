@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { getClassTitle, getState, setClassTitle } from "../lib/storage";
+import { useViewAs } from "../lib/viewAs";
 
 export function Syllabus() {
   const { workshop } = getState();
+  const { isStudentView } = useViewAs();
   const classNumbers = Array.from({ length: workshop.totalClasses }, (_, index) => index + 1);
 
   const [titles, setTitles] = useState<Record<number, string>>(() => {
@@ -42,14 +44,18 @@ export function Syllabus() {
         {classNumbers.map((classNumber) => (
           <li key={classNumber} className="syllabus-item">
             <span className="syllabus-class-label">Class {classNumber}</span>
-            <input
-              type="text"
-              className="syllabus-title-input"
-              value={titles[classNumber]}
-              onChange={(event) => handleChange(classNumber, event.target.value)}
-              onBlur={() => handleBlur(classNumber)}
-              placeholder="Untitled"
-            />
+            {isStudentView ? (
+              <span className="syllabus-title-readonly">{titles[classNumber] || "Untitled"}</span>
+            ) : (
+              <input
+                type="text"
+                className="syllabus-title-input"
+                value={titles[classNumber]}
+                onChange={(event) => handleChange(classNumber, event.target.value)}
+                onBlur={() => handleBlur(classNumber)}
+                placeholder="Untitled"
+              />
+            )}
             <Link to={`/lessons/${classNumber}`} className="syllabus-lesson-link">
               Lesson &rarr;
             </Link>

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useViewAs } from "../lib/viewAs";
 
 // Matches the pasted-Gmail-list case the instructor described: "Name
 // <email@x.com>, Other Name <other@x.com>" — extracting just the email
@@ -12,9 +13,12 @@ function extractEmails(raw: string): string[] {
 }
 
 export function EmailListCleaner() {
+  const { isStudentView } = useViewAs();
   const [raw, setRaw] = useState("");
   const [emails, setEmails] = useState<string[] | null>(null);
   const [copied, setCopied] = useState(false);
+
+  if (isStudentView) return null;
 
   function handleClean() {
     setEmails(extractEmails(raw));

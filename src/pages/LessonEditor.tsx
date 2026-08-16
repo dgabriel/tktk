@@ -3,6 +3,7 @@ import type { MouseEvent as ReactMouseEvent } from "react";
 import { Link, useParams } from "react-router-dom";
 import { PromptRunner } from "../components/PromptRunner";
 import { getClassTitle, getLessonForClass, getState, saveLesson } from "../lib/storage";
+import { useViewAs } from "../lib/viewAs";
 import type { LessonSegment } from "../types";
 
 function generateId(prefix: string): string {
@@ -89,6 +90,7 @@ export function LessonEditor() {
   const { classNumber: classNumberParam } = useParams<{ classNumber: string }>();
   const classNumber = Number(classNumberParam);
   const { workshop } = getState();
+  const { isStudentView } = useViewAs();
 
   const [segments, setSegments] = useState<LessonSegment[]>(() => {
     const existing = getLessonForClass(classNumber);
@@ -283,24 +285,30 @@ export function LessonEditor() {
         <p className="instructor">{workshop.name}</p>
       </header>
 
-      <div className="lesson-schedule">
-        <label className="lesson-schedule-label">
-          Opens at
-          <input
-            type="datetime-local"
-            className="lesson-schedule-input"
-            value={openAt}
-            onChange={(event) => setOpenAt(event.target.value)}
-          />
-        </label>
-        {openAt && (
-          <span className={`lesson-schedule-status${opensInFuture ? " lesson-schedule-status--pending" : ""}`}>
-            {opensInFuture
-              ? `Not yet visible — opens ${new Date(openAt).toLocaleString()}`
-              : `Open since ${new Date(openAt).toLocaleString()}`}
-          </span>
-        )}
-      </div>
+      {(!isStudentView || openAt) && (
+        <div className="lesson-schedule">
+          {!isStudentView && (
+            <label className="lesson-schedule-label">
+              Opens at
+              <input
+                type="datetime-local"
+                className="lesson-schedule-input"
+                value={openAt}
+                onChange={(event) => setOpenAt(event.target.value)}
+              />
+            </label>
+          )}
+          {openAt && (
+            <span
+              className={`lesson-schedule-status${opensInFuture ? " lesson-schedule-status--pending" : ""}`}
+            >
+              {opensInFuture
+                ? `Not yet visible — opens ${new Date(openAt).toLocaleString()}`
+                : `Open since ${new Date(openAt).toLocaleString()}`}
+            </span>
+          )}
+        </div>
+      )}
 
       <div className="lesson-layout">
         <aside className="lesson-outline">
@@ -325,22 +333,24 @@ export function LessonEditor() {
         </aside>
 
         <div className="lesson-main">
-          <details className="lesson-import">
-            <summary>Paste &amp; auto-segment</summary>
-            <p className="lesson-import-hint">
-              Paste lesson text with a line like &ldquo;# Heading&rdquo; before each section — each one
-              becomes its own segment below.
-            </p>
-            <textarea
-              className="lesson-import-textarea"
-              value={importText}
-              onChange={(event) => setImportText(event.target.value)}
-              placeholder={"# First heading\nSome text...\n\n# Second heading\nMore text..."}
-            />
-            <button type="button" onClick={handleImport} disabled={!importText.trim()}>
-              Add segments from text
-            </button>
-          </details>
+          {!isStudentView && (
+            <details className="lesson-import">
+              <summary>Paste &amp; auto-segment</summary>
+              <p className="lesson-import-hint">
+                Paste lesson text with a line like &ldquo;# Heading&rdquo; before each section — each
+                one becomes its own segment below.
+              </p>
+              <textarea
+                className="lesson-import-textarea"
+                value={importText}
+                onChange={(event) => setImportText(event.target.value)}
+                placeholder={"# First heading\nSome text...\n\n# Second heading\nMore text..."}
+              />
+              <button type="button" onClick={handleImport} disabled={!importText.trim()}>
+                Add segments from text
+              </button>
+            </details>
+          )}
 
           <ul className="lesson-segment-list">
             {segments.map((segment, index) => (
@@ -350,81 +360,99 @@ export function LessonEditor() {
                   segmentRefs.current[segment.id] = el;
                 }}
                 className="lesson-segment"
-                draggable
-                onDragStart={() => handleDragStart(index)}
-                onDragOver={(event) => event.preventDefault()}
-                onDrop={() => handleDrop(index)}
+                draggable={!isStudentView}
+                onDragStart={() => !isStudentView && handleDragStart(index)}
+                onDragOver={(event) => !isStudentView && event.preventDefault()}
+                onDrop={() => !isStudentView && handleDrop(index)}
               >
                 <div className="lesson-segment-header">
-                  <span className="lesson-drag-handle" aria-hidden="true">
-                    ⠿
-                  </span>
-                  <input
-                    className="lesson-segment-heading-input"
-                    value={segment.heading}
-                    onChange={(event) => handleHeadingChange(segment.id, event.target.value)}
-                    placeholder="Segment heading"
-                  />
-                  <select
-                    className="lesson-segment-kind"
-                    value={segment.kind ?? "content"}
-                    onChange={(event) =>
-                      handleKindChange(segment.id, event.target.value as "content" | "assignment" | "prompt")
-                    }
-                  >
-                    <option value="content">Content</option>
-                    <option value="assignment">Assignment</option>
-                    <option value="prompt">Writing prompt</option>
-                  </select>
-                  <div className="lesson-segment-controls">
-                    <button
-                      type="button"
-                      onClick={() => handleMoveSegment(index, -1)}
-                      disabled={index === 0}
-                      aria-label="Move segment up"
-                    >
-                      ▲
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleMoveSegment(index, 1)}
-                      disabled={index === segments.length - 1}
-                      aria-label="Move segment down"
-                    >
-                      ▼
-                    </button>
-                    <button
-                      type="button"
-                      className="lesson-segment-delete"
-                      onClick={() => handleDeleteSegment(segment.id)}
-                    >
-                      Delete
-                    </button>
-                  </div>
+                  {isStudentView ? (
+                    <p className="lesson-segment-heading-readonly">{segment.heading || "Untitled"}</p>
+                  ) : (
+                    <>
+                      <span className="lesson-drag-handle" aria-hidden="true">
+                        ⠿
+                      </span>
+                      <input
+                        className="lesson-segment-heading-input"
+                        value={segment.heading}
+                        onChange={(event) => handleHeadingChange(segment.id, event.target.value)}
+                        placeholder="Segment heading"
+                      />
+                      <select
+                        className="lesson-segment-kind"
+                        value={segment.kind ?? "content"}
+                        onChange={(event) =>
+                          handleKindChange(
+                            segment.id,
+                            event.target.value as "content" | "assignment" | "prompt",
+                          )
+                        }
+                      >
+                        <option value="content">Content</option>
+                        <option value="assignment">Assignment</option>
+                        <option value="prompt">Writing prompt</option>
+                      </select>
+                      <div className="lesson-segment-controls">
+                        <button
+                          type="button"
+                          onClick={() => handleMoveSegment(index, -1)}
+                          disabled={index === 0}
+                          aria-label="Move segment up"
+                        >
+                          ▲
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleMoveSegment(index, 1)}
+                          disabled={index === segments.length - 1}
+                          aria-label="Move segment down"
+                        >
+                          ▼
+                        </button>
+                        <button
+                          type="button"
+                          className="lesson-segment-delete"
+                          onClick={() => handleDeleteSegment(segment.id)}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </>
+                  )}
                 </div>
 
                 {segment.kind === "assignment" && (
                   <div className="lesson-assignment-fields">
-                    <label>
-                      Start
-                      <input
-                        type="datetime-local"
-                        value={segment.startAt ?? ""}
-                        onChange={(event) =>
-                          handleAssignmentFieldChange(segment.id, "startAt", event.target.value)
-                        }
-                      />
-                    </label>
-                    <label>
-                      Due
-                      <input
-                        type="datetime-local"
-                        value={segment.dueAt ?? ""}
-                        onChange={(event) =>
-                          handleAssignmentFieldChange(segment.id, "dueAt", event.target.value)
-                        }
-                      />
-                    </label>
+                    {isStudentView ? (
+                      <>
+                        {segment.startAt && <span>Start: {new Date(segment.startAt).toLocaleString()}</span>}
+                        {segment.dueAt && <span>Due: {new Date(segment.dueAt).toLocaleString()}</span>}
+                      </>
+                    ) : (
+                      <>
+                        <label>
+                          Start
+                          <input
+                            type="datetime-local"
+                            value={segment.startAt ?? ""}
+                            onChange={(event) =>
+                              handleAssignmentFieldChange(segment.id, "startAt", event.target.value)
+                            }
+                          />
+                        </label>
+                        <label>
+                          Due
+                          <input
+                            type="datetime-local"
+                            value={segment.dueAt ?? ""}
+                            onChange={(event) =>
+                              handleAssignmentFieldChange(segment.id, "dueAt", event.target.value)
+                            }
+                          />
+                        </label>
+                      </>
+                    )}
                     <button
                       type="button"
                       onClick={() => downloadAssignmentIcs(segment, workshop.name)}
@@ -432,9 +460,12 @@ export function LessonEditor() {
                     >
                       Add due date to calendar (.ics)
                     </button>
-                    <p className="lesson-assignment-note">
-                      Reminder emails aren&rsquo;t available in this prototype — no backend to send them.
-                    </p>
+                    {!isStudentView && (
+                      <p className="lesson-assignment-note">
+                        Reminder emails aren&rsquo;t available in this prototype — no backend to send
+                        them.
+                      </p>
+                    )}
                   </div>
                 )}
 
@@ -444,46 +475,59 @@ export function LessonEditor() {
                       Each stage shows for its duration, then the next one reveals automatically when you
                       run it live below.
                     </p>
-                    <ul className="prompt-stage-list">
-                      {(segment.stages ?? []).map((stage, stageIndex) => (
-                        <li key={stage.id} className="prompt-stage-row">
-                          <span className="prompt-stage-index">{stageIndex + 1}</span>
-                          <textarea
-                            className="prompt-stage-textarea"
-                            value={stage.text}
-                            onChange={(event) =>
-                              handleStageTextChange(segment.id, stage.id, event.target.value)
-                            }
-                            placeholder={`Stage ${stageIndex + 1} prompt text…`}
-                          />
-                          <label className="prompt-stage-duration">
-                            <input
-                              type="number"
-                              min={1}
-                              value={stage.durationMinutes}
-                              onChange={(event) =>
-                                handleStageDurationChange(
-                                  segment.id,
-                                  stage.id,
-                                  Math.max(1, Number(event.target.value) || 1),
-                                )
-                              }
-                            />
+                    {isStudentView ? (
+                      <ul className="prompt-stage-list">
+                        {(segment.stages ?? []).map((stage, stageIndex) => (
+                          <li key={stage.id} className="prompt-stage-row-readonly">
+                            {stageIndex + 1}. {stage.text || "(empty stage)"} &mdash; {stage.durationMinutes}{" "}
                             min
-                          </label>
-                          <button
-                            type="button"
-                            className="comment-card-action"
-                            onClick={() => handleDeleteStage(segment.id, stage.id)}
-                          >
-                            Delete
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                    <button type="button" onClick={() => handleAddStage(segment.id)}>
-                      + Add stage
-                    </button>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <>
+                        <ul className="prompt-stage-list">
+                          {(segment.stages ?? []).map((stage, stageIndex) => (
+                            <li key={stage.id} className="prompt-stage-row">
+                              <span className="prompt-stage-index">{stageIndex + 1}</span>
+                              <textarea
+                                className="prompt-stage-textarea"
+                                value={stage.text}
+                                onChange={(event) =>
+                                  handleStageTextChange(segment.id, stage.id, event.target.value)
+                                }
+                                placeholder={`Stage ${stageIndex + 1} prompt text…`}
+                              />
+                              <label className="prompt-stage-duration">
+                                <input
+                                  type="number"
+                                  min={1}
+                                  value={stage.durationMinutes}
+                                  onChange={(event) =>
+                                    handleStageDurationChange(
+                                      segment.id,
+                                      stage.id,
+                                      Math.max(1, Number(event.target.value) || 1),
+                                    )
+                                  }
+                                />
+                                min
+                              </label>
+                              <button
+                                type="button"
+                                className="comment-card-action"
+                                onClick={() => handleDeleteStage(segment.id, stage.id)}
+                              >
+                                Delete
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                        <button type="button" onClick={() => handleAddStage(segment.id)}>
+                          + Add stage
+                        </button>
+                      </>
+                    )}
 
                     {(segment.stages ?? []).length > 0 && (
                       <div className="prompt-runner-wrapper">
@@ -498,30 +542,35 @@ export function LessonEditor() {
                   </div>
                 )}
 
-                <div className="lesson-toolbar">
-                  <button type="button" onMouseDown={(event) => handleFormat(event, "bold")}>
-                    <strong>B</strong>
-                  </button>
-                  <button type="button" onMouseDown={(event) => handleFormat(event, "italic")}>
-                    <em>I</em>
-                  </button>
-                  <button type="button" onMouseDown={(event) => handleFormat(event, "underline")}>
-                    <u>U</u>
-                  </button>
-                  <button
-                    type="button"
-                    onMouseDown={(event) => handleFormat(event, "insertUnorderedList")}
-                  >
-                    • List
-                  </button>
-                  <button type="button" onMouseDown={(event) => handleFormat(event, "insertOrderedList")}>
-                    1. List
-                  </button>
-                </div>
+                {!isStudentView && (
+                  <div className="lesson-toolbar">
+                    <button type="button" onMouseDown={(event) => handleFormat(event, "bold")}>
+                      <strong>B</strong>
+                    </button>
+                    <button type="button" onMouseDown={(event) => handleFormat(event, "italic")}>
+                      <em>I</em>
+                    </button>
+                    <button type="button" onMouseDown={(event) => handleFormat(event, "underline")}>
+                      <u>U</u>
+                    </button>
+                    <button
+                      type="button"
+                      onMouseDown={(event) => handleFormat(event, "insertUnorderedList")}
+                    >
+                      • List
+                    </button>
+                    <button
+                      type="button"
+                      onMouseDown={(event) => handleFormat(event, "insertOrderedList")}
+                    >
+                      1. List
+                    </button>
+                  </div>
+                )}
 
                 <div
                   className="lesson-editable"
-                  contentEditable
+                  contentEditable={!isStudentView}
                   suppressContentEditableWarning
                   ref={(el) => {
                     bodyRefs.current[segment.id] = el;
@@ -532,18 +581,22 @@ export function LessonEditor() {
             ))}
           </ul>
 
-          <button type="button" className="lesson-add-segment" onClick={handleAddSegment}>
-            + Add segment
-          </button>
+          {!isStudentView && (
+            <>
+              <button type="button" className="lesson-add-segment" onClick={handleAddSegment}>
+                + Add segment
+              </button>
 
-          <div className="lesson-save-row">
-            <button type="button" className="composer-save" onClick={handleSave}>
-              Save lesson
-            </button>
-            {savedAt && (
-              <span className="lesson-saved-note">Saved {savedAt.toLocaleTimeString()}</span>
-            )}
-          </div>
+              <div className="lesson-save-row">
+                <button type="button" className="composer-save" onClick={handleSave}>
+                  Save lesson
+                </button>
+                {savedAt && (
+                  <span className="lesson-saved-note">Saved {savedAt.toLocaleTimeString()}</span>
+                )}
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>

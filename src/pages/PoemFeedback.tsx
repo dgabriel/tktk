@@ -4,6 +4,7 @@ import { CommentCard } from "../components/CommentCard";
 import { MarkupCommentCard } from "../components/MarkupCommentCard";
 import { useMarkupOverlay } from "../hooks/useMarkupOverlay";
 import { resolveAuthor } from "../lib/authors";
+import { useViewAs } from "../lib/viewAs";
 import {
   addComment,
   addReply,
@@ -39,7 +40,8 @@ function pointsToPath(points: OverlayPoint[]): string {
 
 export function PoemFeedback() {
   const { poemId } = useParams<{ poemId: string }>();
-  const { poems, students, currentUser } = getState();
+  const { poems, students } = getState();
+  const { effectiveUserId } = useViewAs();
 
   const poem = poems.find((candidate) => candidate.id === poemId);
   const student = poem ? students.find((candidate) => candidate.id === poem.studentId) : undefined;
@@ -62,8 +64,14 @@ export function PoemFeedback() {
   // Which author's marks are currently shown/editable in Markup mode.
   // Defaults to "my own" — you can switch to view a classmate's marks, but
   // Draw/Erase/Comment only ever operate on your own (see `canEditMarkup`).
-  const [viewAuthorId, setViewAuthorId] = useState(currentUser.username);
-  const canEditMarkup = viewAuthorId === currentUser.username;
+  // "My own" tracks the student-view toggle's effectiveUserId, not a fixed
+  // identity — resets whenever that changes (e.g. switching who you're
+  // viewing as) so "My marks" always means the currently-acting person.
+  const [viewAuthorId, setViewAuthorId] = useState(effectiveUserId);
+  useEffect(() => {
+    setViewAuthorId(effectiveUserId);
+  }, [effectiveUserId]);
+  const canEditMarkup = viewAuthorId === effectiveUserId;
   const overlay = useMarkupOverlay(poem?.id ?? "", feedbackMode === "markup" && canEditMarkup, viewAuthorId);
 
   const poemBodyRef = useRef<HTMLDivElement>(null);
@@ -179,7 +187,7 @@ export function PoemFeedback() {
     if (!poem || !pendingSelection || !draftText.trim()) return;
     const saved = addComment({
       poemId: poem.id,
-      authorId: currentUser.username,
+      authorId: effectiveUserId,
       start: pendingSelection.start,
       end: pendingSelection.end,
       excerpt: pendingSelection.text,
@@ -236,7 +244,7 @@ export function PoemFeedback() {
 
   function handleAddReply(parentId: string, text: string) {
     if (!poem) return;
-    const saved = addReply({ poemId: poem.id, parentId, authorId: currentUser.username, text });
+    const saved = addReply({ poemId: poem.id, parentId, authorId: effectiveUserId, text });
     setReplies((prev) => [...prev, saved]);
   }
 
@@ -333,8 +341,10 @@ export function PoemFeedback() {
                   value={viewAuthorId}
                   onChange={(event) => setViewAuthorId(event.target.value)}
                 >
-                  <option value={currentUser.username}>My marks</option>
-                  {students.map((candidate) => (
+                  <option value={effectiveUserId}>My marks</option>
+                  {students
+                    .filter((candidate) => candidate.id !== effectiveUserId)
+                    .map((candidate) => (
                     <option key={candidate.id} value={candidate.id}>
                       {candidate.name}
                     </option>

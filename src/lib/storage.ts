@@ -40,6 +40,11 @@ interface AppState {
   officeHoursSlots: OfficeHoursSlot[];
   classSessions: ClassSession[];
   currentUser: { username: string; fullName: string };
+  // Which Student.id the app is currently "viewing as," for the student-view
+  // PoC toggle — null means the real currentUser (the instructor). Doesn't
+  // bump STORAGE_KEY: older stored state simply lacks this field, and every
+  // reader falls back to null via `?? null`, so it's harmless either way.
+  viewingAsStudentId?: string | null;
 }
 
 function loadState(): AppState {
@@ -60,6 +65,7 @@ function loadState(): AppState {
     officeHoursSlots: seedOfficeHoursSlots,
     classSessions: seedClassSessions,
     currentUser: { username: "scha", fullName: "Sam Cha" },
+    viewingAsStudentId: null,
   };
   localStorage.setItem(STORAGE_KEY, JSON.stringify(initial));
   return initial;
@@ -345,5 +351,15 @@ export function setClassTitle(classNumber: number, title: string): void {
   } else {
     state.classSessions[index].title = trimmed;
   }
+  saveState(state);
+}
+
+export function getViewingAsStudentId(): string | null {
+  return loadState().viewingAsStudentId ?? null;
+}
+
+export function setViewingAsStudentId(studentId: string | null): void {
+  const state = loadState();
+  state.viewingAsStudentId = studentId;
   saveState(state);
 }

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { addReading, deleteReading, getReadingsForClass } from "../lib/storage";
+import { useViewAs } from "../lib/viewAs";
 import type { Reading } from "../types";
 
 // No backend here to fetch the linked page's real <title> (would need a
@@ -25,6 +26,7 @@ function deriveTitleFromUrl(url: string): string {
 }
 
 export function ReadingsList({ classNumber }: { classNumber: number }) {
+  const { isStudentView } = useViewAs();
   const [readings, setReadings] = useState<Reading[]>(() => getReadingsForClass(classNumber));
   const [url, setUrl] = useState("");
 
@@ -44,21 +46,23 @@ export function ReadingsList({ classNumber }: { classNumber: number }) {
   return (
     <div className="readings-section">
       <h2 className="class-heading">Class {classNumber}: readings</h2>
-      <div className="readings-add-row">
-        <input
-          type="url"
-          className="readings-add-input"
-          value={url}
-          onChange={(event) => setUrl(event.target.value)}
-          placeholder="Paste a link…"
-          onKeyDown={(event) => {
-            if (event.key === "Enter") handleAdd();
-          }}
-        />
-        <button type="button" onClick={handleAdd} disabled={!url.trim()}>
-          Add reading
-        </button>
-      </div>
+      {!isStudentView && (
+        <div className="readings-add-row">
+          <input
+            type="url"
+            className="readings-add-input"
+            value={url}
+            onChange={(event) => setUrl(event.target.value)}
+            placeholder="Paste a link…"
+            onKeyDown={(event) => {
+              if (event.key === "Enter") handleAdd();
+            }}
+          />
+          <button type="button" onClick={handleAdd} disabled={!url.trim()}>
+            Add reading
+          </button>
+        </div>
+      )}
 
       {readings.length === 0 ? (
         <p className="empty-note">No readings added for this class yet.</p>
@@ -73,13 +77,15 @@ export function ReadingsList({ classNumber }: { classNumber: number }) {
                 <Link to={`/readings/${reading.id}`} className="readings-item-feedback-link">
                   Feedback
                 </Link>
-                <button
-                  type="button"
-                  className="comment-card-action"
-                  onClick={() => handleDelete(reading.id)}
-                >
-                  Delete
-                </button>
+                {!isStudentView && (
+                  <button
+                    type="button"
+                    className="comment-card-action"
+                    onClick={() => handleDelete(reading.id)}
+                  >
+                    Delete
+                  </button>
+                )}
               </div>
             </li>
           ))}

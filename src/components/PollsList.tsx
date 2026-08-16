@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { addPoll, deletePoll, getPollsForClass, getState, toggleVote } from "../lib/storage";
+import { addPoll, deletePoll, getPollsForClass, toggleVote } from "../lib/storage";
+import { useViewAs } from "../lib/viewAs";
 import type { Poll } from "../types";
 
 export function PollsList({ classNumber }: { classNumber: number }) {
-  const { currentUser } = getState();
+  const { effectiveUserId, isStudentView } = useViewAs();
   const [polls, setPolls] = useState<Poll[]>(() => getPollsForClass(classNumber));
   const [question, setQuestion] = useState("");
   const [optionInputs, setOptionInputs] = useState(["", ""]);
@@ -26,7 +27,7 @@ export function PollsList({ classNumber }: { classNumber: number }) {
   }
 
   function handleVote(pollId: string, optionId: string) {
-    const updated = toggleVote(pollId, optionId, currentUser.username);
+    const updated = toggleVote(pollId, optionId, effectiveUserId);
     if (!updated) return;
     setPolls((prev) => prev.map((poll) => (poll.id === pollId ? updated : poll)));
   }
@@ -40,39 +41,41 @@ export function PollsList({ classNumber }: { classNumber: number }) {
     <div className="polls-section">
       <h2 className="class-heading">Class {classNumber}: polls</h2>
 
-      <details className="lesson-import">
-        <summary>New poll</summary>
-        <input
-          type="text"
-          className="readings-add-input polls-question-input"
-          value={question}
-          onChange={(event) => setQuestion(event.target.value)}
-          placeholder="Question…"
-        />
-        {optionInputs.map((option, index) => (
+      {!isStudentView && (
+        <details className="lesson-import">
+          <summary>New poll</summary>
           <input
-            key={index}
             type="text"
-            className="readings-add-input polls-option-input"
-            value={option}
-            onChange={(event) => handleOptionChange(index, event.target.value)}
-            placeholder={`Option ${index + 1}`}
+            className="readings-add-input polls-question-input"
+            value={question}
+            onChange={(event) => setQuestion(event.target.value)}
+            placeholder="Question…"
           />
-        ))}
-        <div className="composer-actions">
-          <button type="button" onClick={handleAddOptionField}>
-            + Add option
-          </button>
-          <button
-            type="button"
-            className="composer-save"
-            onClick={handleCreatePoll}
-            disabled={!question.trim() || optionInputs.filter((o) => o.trim()).length < 2}
-          >
-            Create poll
-          </button>
-        </div>
-      </details>
+          {optionInputs.map((option, index) => (
+            <input
+              key={index}
+              type="text"
+              className="readings-add-input polls-option-input"
+              value={option}
+              onChange={(event) => handleOptionChange(index, event.target.value)}
+              placeholder={`Option ${index + 1}`}
+            />
+          ))}
+          <div className="composer-actions">
+            <button type="button" onClick={handleAddOptionField}>
+              + Add option
+            </button>
+            <button
+              type="button"
+              className="composer-save"
+              onClick={handleCreatePoll}
+              disabled={!question.trim() || optionInputs.filter((o) => o.trim()).length < 2}
+            >
+              Create poll
+            </button>
+          </div>
+        </details>
+      )}
 
       {polls.length === 0 ? (
         <p className="empty-note">No polls for this class yet.</p>
@@ -84,18 +87,20 @@ export function PollsList({ classNumber }: { classNumber: number }) {
               <li key={poll.id} className="poll-card">
                 <div className="poll-question-row">
                   <p className="poll-question">{poll.question}</p>
-                  <button
-                    type="button"
-                    className="comment-card-action"
-                    onClick={() => handleDeletePoll(poll.id)}
-                  >
-                    Delete
-                  </button>
+                  {!isStudentView && (
+                    <button
+                      type="button"
+                      className="comment-card-action"
+                      onClick={() => handleDeletePoll(poll.id)}
+                    >
+                      Delete
+                    </button>
+                  )}
                 </div>
                 <ul className="poll-options">
                   {poll.options.map((option) => {
                     const pct = totalVotes === 0 ? 0 : Math.round((option.voterIds.length / totalVotes) * 100);
-                    const votedByMe = option.voterIds.includes(currentUser.username);
+                    const votedByMe = option.voterIds.includes(effectiveUserId);
                     return (
                       <li key={option.id}>
                         <button
