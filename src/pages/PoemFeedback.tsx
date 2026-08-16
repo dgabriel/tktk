@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { CommentCard } from "../components/CommentCard";
 import { MarkupCommentCard } from "../components/MarkupCommentCard";
 import { useMarkupOverlay } from "../hooks/useMarkupOverlay";
+import { resolveAuthor } from "../lib/authors";
 import {
   addComment,
   addReply,
@@ -13,7 +14,7 @@ import {
   getRepliesForPoem,
   getState,
 } from "../lib/storage";
-import type { Author, Comment, OverlayPoint, Reply } from "../types";
+import type { Comment, OverlayPoint, Reply } from "../types";
 
 interface PendingSelection {
   start: number;
@@ -36,33 +37,13 @@ function pointsToPath(points: OverlayPoint[]): string {
   return points.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ");
 }
 
-function initialsFromName(name: string): string {
-  return name
-    .split(" ")
-    .map((part) => part[0])
-    .join("")
-    .toUpperCase();
-}
-
 export function PoemFeedback() {
   const { poemId } = useParams<{ poemId: string }>();
   const { poems, students, currentUser } = getState();
 
   const poem = poems.find((candidate) => candidate.id === poemId);
   const student = poem ? students.find((candidate) => candidate.id === poem.studentId) : undefined;
-
-  // Comment/Reply.authorId is either the current user's username or a
-  // Student.id — this resolves either into a display name + initials for
-  // rendering. Falls back to the current user if an id is somehow unknown
-  // (shouldn't happen with real data, but keeps rendering from breaking).
-  const getAuthor = (authorId: string): Author => {
-    if (authorId === currentUser.username) {
-      return { name: currentUser.fullName, initials: initialsFromName(currentUser.fullName) };
-    }
-    const authorStudent = students.find((candidate) => candidate.id === authorId);
-    if (authorStudent) return { name: authorStudent.name, initials: authorStudent.initials };
-    return { name: currentUser.fullName, initials: initialsFromName(currentUser.fullName) };
-  };
+  const getAuthor = resolveAuthor;
 
   const [comments, setComments] = useState<Comment[]>(() => (poem ? getCommentsForPoem(poem.id) : []));
   const [replies, setReplies] = useState<Reply[]>(() => (poem ? getRepliesForPoem(poem.id) : []));

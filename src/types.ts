@@ -45,6 +45,17 @@ export interface Lesson {
   openAt?: string;
 }
 
+// A reading added by pasting a link — there's no backend to fetch the
+// linked page's real title (would need a server-side fetch to dodge CORS),
+// so `title` is a simple heuristic derived from the URL itself at add time.
+export interface Reading {
+  id: string;
+  classNumber: number;
+  url: string;
+  title: string;
+  addedAt: string;
+}
+
 export interface Workshop {
   name: string;
   instructor: string;

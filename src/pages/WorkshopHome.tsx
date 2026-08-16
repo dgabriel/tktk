@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { AuthorModal } from "../components/AuthorModal";
 import { EmailListCleaner } from "../components/EmailListCleaner";
 import { PoemListItem } from "../components/PoemListItem";
+import { ReadingsList } from "../components/ReadingsList";
 import { getLessonForClass, getState } from "../lib/storage";
 import type { Student } from "../types";
 
@@ -125,6 +126,8 @@ export function WorkshopHome() {
             )}
           </>
         )}
+
+        <ReadingsList classNumber={selectedClass} />
       </div>
 
       {selectedStudent && (

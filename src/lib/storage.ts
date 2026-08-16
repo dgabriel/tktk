@@ -3,13 +3,14 @@ import {
   lessons as seedLessons,
   overlayStrokes as seedOverlayStrokes,
   poems as seedPoems,
+  readings as seedReadings,
   replies as seedReplies,
   students as seedStudents,
   workshop as seedWorkshop,
 } from "../data/seedData";
-import type { Comment, Lesson, OverlayStroke, Poem, Reply, Student, Workshop } from "../types";
+import type { Comment, Lesson, OverlayStroke, Poem, Reading, Reply, Student, Workshop } from "../types";
 
-const STORAGE_KEY = "tktk:v14";
+const STORAGE_KEY = "tktk:v15";
 
 interface AppState {
   workshop: Workshop;
@@ -19,6 +20,7 @@ interface AppState {
   overlayStrokes: OverlayStroke[];
   replies: Reply[];
   lessons: Lesson[];
+  readings: Reading[];
   currentUser: { username: string; fullName: string };
 }
 
@@ -35,6 +37,7 @@ function loadState(): AppState {
     overlayStrokes: seedOverlayStrokes,
     replies: seedReplies,
     lessons: seedLessons,
+    readings: seedReadings,
     currentUser: { username: "scha", fullName: "Sam Cha" },
   };
   localStorage.setItem(STORAGE_KEY, JSON.stringify(initial));
@@ -189,4 +192,40 @@ export function saveLesson(lesson: Lesson): Lesson {
   else state.lessons[index] = lesson;
   saveState(state);
   return lesson;
+}
+
+export function getReadingsForClass(classNumber: number): Reading[] {
+  return loadState().readings.filter((reading) => reading.classNumber === classNumber);
+}
+
+export function getReading(readingId: string): Reading | undefined {
+  return loadState().readings.find((reading) => reading.id === readingId);
+}
+
+export function addReading(input: { classNumber: number; url: string; title: string }): Reading {
+  const state = loadState();
+  const reading: Reading = {
+    id: `reading-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    addedAt: new Date().toISOString(),
+    ...input,
+  };
+  state.readings.push(reading);
+  saveState(state);
+  return reading;
+}
+
+// Cascades to comments/replies the same way deleteComment does for poem
+// comments — an orphaned reading shouldn't leave its feedback thread
+// dangling in the sidebar of a page that no longer exists.
+export function deleteReading(readingId: string): void {
+  const state = loadState();
+  state.readings = state.readings.filter((reading) => reading.id !== readingId);
+  const orphanedCommentIds = new Set(
+    state.comments.filter((comment) => comment.poemId === readingId).map((comment) => comment.id),
+  );
+  state.comments = state.comments.filter((comment) => comment.poemId !== readingId);
+  state.replies = state.replies.filter(
+    (reply) => reply.poemId !== readingId && !orphanedCommentIds.has(reply.parentId),
+  );
+  saveState(state);
 }

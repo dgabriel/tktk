@@ -1,4 +1,4 @@
-import type { Comment, Lesson, OverlayStroke, Poem, Reply, Student, Workshop } from "../types";
+import type { Comment, Lesson, OverlayStroke, Poem, Reading, Reply, Student, Workshop } from "../types";
 
 const WORKSHOP_NAME = 'What the "I" Doesn\'t See: Beyond the First-Person Lyric';
 
@@ -429,5 +429,18 @@ export const lessons: Lesson[] = [
         html: "<p>Write a short first-person passage from a speaker who is confident, even boastful, about something the reader can tell they're wrong about. Don't editorialize — let the gap do the work.</p>",
       },
     ],
+  },
+];
+
+// Only Class 1 has readings seeded, same convention as `lessons` above —
+// a real external link (Poetry Foundation's page for the Dickinson poem
+// already in this workshop), not a fabricated one.
+export const readings: Reading[] = [
+  {
+    id: "reading-poetry-foundation-dickinson",
+    classNumber: 1,
+    url: "https://www.poetryfoundation.org/poems/47652/because-i-could-not-stop-for-death-479",
+    title: "Because I could not stop for Death — Poetry Foundation",
+    addedAt: "2026-07-10T12:00:00.000Z",
   },
 ];
