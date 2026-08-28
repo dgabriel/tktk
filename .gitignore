@@ -28,3 +28,10 @@ dist-ssr
 *.db
 .beads-credential-key
 .beads/proxieddb/
+
+# tktk MVP (Cloudflare Workers / wrangler / D1)
+.wrangler/
+.dev.vars
+*.sqlite
+findings.json
+.flaught-dismissals.json
