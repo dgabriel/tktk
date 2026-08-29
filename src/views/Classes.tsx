@@ -7,6 +7,7 @@
 import type { FC } from "hono/jsx";
 import { Layout } from "./Layout";
 import type { ClassDetail, ClassListItem } from "../lib/classes";
+import type { PendingInvite } from "../lib/invites";
 
 export type ClassFormErrors = { name?: string };
 export type ClassFormValues = { name?: string; term?: string; description?: string };
@@ -84,10 +85,17 @@ export const ClassListPage: FC<{
   </Layout>
 );
 
-export const ClassDetailPage: FC<{ classDetail: ClassDetail; loggedInAs: string }> = ({
-  classDetail,
-  loggedInAs,
-}) => (
+export type InviteFormErrors = { email?: string };
+export type InviteFormValues = { email?: string };
+
+export const ClassDetailPage: FC<{
+  classDetail: ClassDetail;
+  loggedInAs: string;
+  pendingInvites?: PendingInvite[];
+  inviteError?: string;
+  inviteSuccess?: string;
+  inviteValues?: InviteFormValues;
+}> = ({ classDetail, loggedInAs, pendingInvites = [], inviteError, inviteSuccess, inviteValues = {} }) => (
   <Layout title={classDetail.name} loggedInAs={loggedInAs}>
     <main class="container stack">
       <p>
@@ -126,6 +134,49 @@ export const ClassDetailPage: FC<{ classDetail: ClassDetail; loggedInAs: string 
             ))}
           </tbody>
         </table>
+      </div>
+
+      <div class="panel stack">
+        <h2>Invite a student</h2>
+        {inviteSuccess && <p class="message message-success">{inviteSuccess}</p>}
+        {inviteError && <p class="message message-error">{inviteError}</p>}
+        <form method="post" action={`/classes/${classDetail.id}/invites`} class="stack">
+          <div class="field">
+            <label for="invite-email">Email</label>
+            <input
+              type="email"
+              id="invite-email"
+              name="email"
+              required
+              value={inviteValues.email ?? ""}
+            />
+          </div>
+          <button type="submit" class="btn">
+            Send invite
+          </button>
+        </form>
+
+        {pendingInvites.length > 0 && (
+          <>
+            <h3>Pending invites</h3>
+            <table>
+              <thead>
+                <tr>
+                  <th>Email</th>
+                  <th>Invited</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pendingInvites.map((invite) => (
+                  <tr>
+                    <td>{invite.email}</td>
+                    <td>{invite.createdAt}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </>
+        )}
       </div>
     </main>
   </Layout>
