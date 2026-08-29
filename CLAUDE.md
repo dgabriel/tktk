@@ -60,6 +60,8 @@ These resolve gaps in the kickoff brief that blocked scaffolding a working skele
 - **Join-code collisions:** generate, retry on unique-constraint violation. No regeneration endpoint yet (not in kickoff brief §5's route list) — flag to `product-manager` if teachers need to rotate a compromised code.
 - **CSS approach and visual design direction:** resolved by `ui-agent` per kickoff brief §9.5 — see "Design language" above. `public/styles.css` now carries the real base stylesheet.
 - **D1 preview-deployment binding strategy (kickoff brief §9.1) is still open** — needs a Cloudflare account decision (seeded copy vs. shared branch DB vs. ephemeral) that couldn't be made without real Cloudflare access during scaffolding.
+- **Password minimum: 8 characters** (`MIN_PASSWORD_LENGTH` in `src/lib/auth.ts`), no other complexity rules. Nothing in the kickoff brief specified a password policy; this is a conservative MVP default, not a final product decision — revisit with `product-manager` if a stricter policy is wanted.
+- **`GET`/`POST /auth/signup` is teacher self-registration only** (hardcodes `role: 'teacher'`) — there is no public student signup route. Students only get accounts via the invite-acceptance flow (tktk-lfc.4) or the join-code flow (tktk-lfc.5); both are separate, not-yet-built issues with their own signup-like logic reusing `src/lib/password.ts`. Not in the original kickoff brief (which had no explicit signup step at all, since magic-link didn't need one).
 
 ## Open decisions not yet made
 
