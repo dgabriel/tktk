@@ -7,8 +7,10 @@
 // column in Postgres is a drop-in swap rather than a format migration).
 //
 // Tables match kickoff brief §3 (users, classes, class_teachers,
-// class_students, invites) plus `login_tokens`, added during scaffolding —
-// see CLAUDE.md "Decisions made during scaffolding" for why.
+// class_students, invites), adjusted for username+password auth (CLAUDE.md
+// "Decisions made during scaffolding" supersedes brief §4's magic-link
+// design — the `users.username`/`passwordHash` columns and the removal of
+// `login_tokens` are the schema-level trace of that decision).
 
 import { sqliteTable, text, primaryKey } from "drizzle-orm/sqlite-core";
 import { sql } from "drizzle-orm";
@@ -18,6 +20,9 @@ const nowDefault = sql`(current_timestamp)`;
 
 export const users = sqliteTable("users", {
   id: text("id").primaryKey(),
+  // Login identifier. Not the invite/contact channel -- that's `email`.
+  username: text("username").notNull().unique(),
+  passwordHash: text("password_hash").notNull(),
   email: text("email").notNull().unique(),
   name: text("name"),
   // 'teacher' | 'student' — set at creation, not changed. See CLAUDE.md /
@@ -74,6 +79,11 @@ export const classStudents = sqliteTable(
   (table) => [primaryKey({ columns: [table.classId, table.userId] })],
 );
 
+// `token` is now an invite/enrollment code, not an auth token: the emailed
+// link takes the invited student to a signup form (choose username +
+// password, pre-filled email) rather than auto-authenticating them. Resend
+// is still used here for invite delivery -- only login/signup stopped being
+// email-token-based, not invitations.
 export const invites = sqliteTable("invites", {
   id: text("id").primaryKey(),
   classId: text("class_id")
@@ -87,18 +97,5 @@ export const invites = sqliteTable("invites", {
   expiresAt: timestamp("expires_at").notNull(),
   // 'pending' | 'accepted' | 'expired' | 'revoked'
   status: text("status").notNull(),
-  createdAt: timestamp("created_at").notNull().default(nowDefault),
-});
-
-// Added during scaffolding — not in kickoff brief §3. Backs the *non-invite*
-// magic-link login (an existing user logging back in, or the join-code
-// flow's own magic link) — `invites` only covers the teacher→student invite
-// path. See CLAUDE.md "Decisions made during scaffolding."
-export const loginTokens = sqliteTable("login_tokens", {
-  id: text("id").primaryKey(),
-  email: text("email").notNull(),
-  token: text("token").notNull().unique(),
-  expiresAt: timestamp("expires_at").notNull(),
-  usedAt: timestamp("used_at"),
   createdAt: timestamp("created_at").notNull().default(nowDefault),
 });

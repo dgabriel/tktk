@@ -14,7 +14,7 @@ The repo also contains `prototype/` — an earlier React+Vite feedback-annotatio
 - **API framework:** Hono
 - **DB:** D1, accessed exclusively via Drizzle ORM
 - **Frontend:** Server-rendered Hono JSX + htmx 4.0 — no React, no client build step, no bundler-managed frontend app. See `htmx-4.0-notes.md` for version-specific behavior (explicit `:inherited` attribute inheritance, renamed events, `fetch()`-based transport).
-- **Auth/email:** Resend (magic link)
+- **Auth:** username + password (PBKDF2 via Web Crypto, `src/lib/password.ts`), no email confirmation yet. Supersedes kickoff brief §4's magic-link design — see "Decisions made during scaffolding." Resend is still used for invite delivery (notification), just not for authentication.
 - **Issue tracking:** beads (`bd` CLI) — local to the agentic dev loop, not a general planner
 
 ## Hard rules
@@ -48,9 +48,9 @@ tktk does not inherit MMC's Duchamp/Rotorelief visual system — that's MMC-spec
 
 These resolve gaps in the kickoff brief that blocked scaffolding a working skeleton. They're conservative defaults, not final product decisions — reopen with `product-manager`/the user if they're wrong, don't just work around them.
 
-- **Non-invite magic-link login has its own table, `login_tokens`** (`email`, `token`, `expires_at`, `used_at`) — the brief's `invites` table only covers the teacher→student invite path; there was no schema support for an existing user logging back in, or for the join-code flow's own magic link. This is a schema addition beyond kickoff brief §3.
+- **Auth is username + password, not magic-link (supersedes kickoff brief §4).** The magic-link round-trip (check email, click link, get redirected) was a poor login UX for repeat visits — decided after scaffolding, not part of the original brief. `users` gained `username` (unique, the login identifier) and `passwordHash` (PBKDF2-SHA256 via Web Crypto, `src/lib/password.ts` — 210k iterations per OWASP's 2023 minimum, no bcrypt/argon2 dependency since Workers' `SubtleCrypto` doesn't expose them natively). **No email confirmation yet** — a user's `email` is collected (still needed for invite matching/contact) but not verified via a clicked link; add that later if needed, don't build around its absence. The `login_tokens` table from the original scaffolding pass is **removed** — it existed only to back magic-link login. `invites.token` is now an invite/enrollment code (the emailed link takes a student to a signup form), not an auth token — Resend is still used for invite *delivery*, just not for login/signup.
 - **Sessions are stateless, signed cookies** (`src/lib/session.ts`), not a DB-backed session table and not Workers KV. Keeps the MVP on a single Cloudflare resource (D1) instead of introducing a second one. Needs a `SESSION_SECRET` (see `.dev.vars.example`).
-- **Invite/login-token expiry: 7 days.** (Kickoff brief §9.4 asked for a default to be picked and documented — this is it.)
+- **Invite-code expiry: 7 days.** (Kickoff brief §9.4 asked for a default to be picked and documented — this is it. Applies to `invites.expires_at`; there's no login-token expiry anymore since there's no login token.)
 - **Join-code collisions:** generate, retry on unique-constraint violation. No regeneration endpoint yet (not in kickoff brief §5's route list) — flag to `product-manager` if teachers need to rotate a compromised code.
 - **CSS approach and visual design direction are still undecided** — `ui-agent`'s call per kickoff brief §9.5, not resolved by this scaffolding pass. `src/styles.css` is an empty placeholder.
 - **D1 preview-deployment binding strategy (kickoff brief §9.1) is still open** — needs a Cloudflare account decision (seeded copy vs. shared branch DB vs. ephemeral) that couldn't be made without real Cloudflare access during scaffolding.
