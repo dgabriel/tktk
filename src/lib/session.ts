@@ -20,6 +20,13 @@ export type SessionPayload = {
   exp: number; // unix seconds
 };
 
+// Hono `Variables` generic for apps/middleware that read the session set by
+// requireTeacher (src/lib/authGuard.ts) — shared here so both sides agree on
+// the shape of `c.get("session")` / `c.set("session", ...)`.
+export type Variables = {
+  session: SessionPayload;
+};
+
 function toBase64Url(bytes: Uint8Array): string {
   let binary = "";
   for (const byte of bytes) binary += String.fromCharCode(byte);

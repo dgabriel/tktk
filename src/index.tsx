@@ -9,10 +9,13 @@ import type { Env } from "./db";
 import { getDb } from "./db";
 import { Layout } from "./views/Layout";
 import { LoginPage, SignupPage } from "./views/Auth";
+import { ClassDetailPage, ClassListPage } from "./views/Classes";
 import { signupTeacher, verifyLogin } from "./lib/auth";
-import { createSessionCookie } from "./lib/session";
+import { createSessionCookie, type Variables } from "./lib/session";
+import { requireTeacher } from "./lib/authGuard";
+import { createClass, getClassDetailForTeacher, listClassesForTeacher } from "./lib/classes";
 
-const app = new Hono<{ Bindings: Env }>();
+const app = new Hono<{ Bindings: Env; Variables: Variables }>();
 
 app.get("/", async (c) => {
   // Touches the DB binding through the one sanctioned access point (src/db.ts)
@@ -54,9 +57,7 @@ app.post("/auth/signup", async (c) => {
     role: "teacher",
   });
 
-  // No dashboard/class-list page yet (tktk-lfc.2) -- redirect to `/` for
-  // now; this should become `/classes` once that route exists.
-  return c.redirect("/", 303);
+  return c.redirect("/classes", 303);
 });
 
 app.post("/auth/login", async (c) => {
@@ -79,8 +80,50 @@ app.post("/auth/login", async (c) => {
     role: user.role,
   });
 
-  // Same "no dashboard yet" note as signup above.
-  return c.redirect("/", 303);
+  return c.redirect("/classes", 303);
+});
+
+app.get("/classes", requireTeacher, async (c) => {
+  const session = c.get("session");
+  const db = getDb(c.env);
+  const classes = await listClassesForTeacher(db, session.userId);
+
+  return c.html(<ClassListPage classes={classes} />);
+});
+
+app.post("/classes", requireTeacher, async (c) => {
+  const session = c.get("session");
+  const body = await c.req.parseBody();
+  const name = String(body.name ?? "").trim();
+  const term = String(body.term ?? "").trim();
+  const description = String(body.description ?? "").trim();
+
+  const db = getDb(c.env);
+  const result = await createClass(db, {
+    name,
+    term: term || undefined,
+    description: description || undefined,
+    createdBy: session.userId,
+  });
+
+  if (!result.ok) {
+    const classes = await listClassesForTeacher(db, session.userId);
+    return c.html(<ClassListPage classes={classes} errors={result.errors} values={{ name, term, description }} />, 400);
+  }
+
+  return c.redirect(`/classes/${result.id}`, 303);
+});
+
+app.get("/classes/:id", requireTeacher, async (c) => {
+  const session = c.get("session");
+  const db = getDb(c.env);
+  const classDetail = await getClassDetailForTeacher(db, c.req.param("id"), session.userId);
+
+  if (!classDetail) {
+    return c.redirect("/classes", 303);
+  }
+
+  return c.html(<ClassDetailPage classDetail={classDetail} />);
 });
 
 export default app;
