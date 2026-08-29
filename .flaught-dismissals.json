@@ -1,0 +1,203 @@
+{
+  "version": 1,
+  "dismissals": [
+    {
+      "fingerprint": "sha256:87d9a835b018af9da0181008acad728e",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-29T00:35:10.890Z",
+      "reason": "Code owner understands and accepts the risk of sending staged code to Groq's API via the LLM review pass; otherwise a valid finding.",
+      "context": {
+        "title": "Potential source code exfiltration via LLM in pre-commit",
+        "file": ".husky/pre-commit"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:ac97ecbca2f13fdbe19c381eedd0e575",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-29T00:35:40.261Z",
+      "reason": "Deliberate tradeoff -- the whole point of the LLM pass is a real adversarial review before commit; slower commits are the accepted cost.",
+      "context": {
+        "title": "New dev dependency expands supply‑chain attack surface",
+        "file": "package.json"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:e59ae858b28399a974963798491833a8",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-29T00:47:08.725Z",
+      "reason": "esbuild dev-server CORS vuln (GHSA-67mh-4wv8-2f99), transitive via drizzle-kit's internal @esbuild-kit/* tooling -- no network-exposed dev server in this app, and the only fix is a breaking downgrade to drizzle-kit@0.18.1 with no newer upstream fix available. Accepted risk.",
+      "context": {
+        "title": "@esbuild-kit/core-utils: Vulnerability in @esbuild-kit/core-utils (*)",
+        "file": "@esbuild-kit/core-utils"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:2e5fde5ba2ab2e1f57760a0357c67b12",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-29T00:47:09.023Z",
+      "reason": "esbuild dev-server CORS vuln (GHSA-67mh-4wv8-2f99), transitive via drizzle-kit's internal @esbuild-kit/* tooling -- no network-exposed dev server in this app, and the only fix is a breaking downgrade to drizzle-kit@0.18.1 with no newer upstream fix available. Accepted risk.",
+      "context": {
+        "title": "@esbuild-kit/esm-loader: Vulnerability in @esbuild-kit/esm-loader (*)",
+        "file": "@esbuild-kit/esm-loader"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:9fd827248b064947ca8d7685f62dd72b",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-29T00:47:09.317Z",
+      "reason": "esbuild dev-server CORS vuln (GHSA-67mh-4wv8-2f99), transitive via drizzle-kit's internal @esbuild-kit/* tooling -- no network-exposed dev server in this app, and the only fix is a breaking downgrade to drizzle-kit@0.18.1 with no newer upstream fix available. Accepted risk.",
+      "context": {
+        "title": "drizzle-kit: Vulnerability in drizzle-kit (0.19.0 - 1.0.0-beta.1-fd8bfcc)",
+        "file": "drizzle-kit"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:6c25cba07fd9341f0102d9e6a0cb72cb",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-29T00:47:09.618Z",
+      "reason": "esbuild dev-server CORS vuln (GHSA-67mh-4wv8-2f99), transitive via drizzle-kit's internal @esbuild-kit/* tooling -- no network-exposed dev server in this app, and the only fix is a breaking downgrade to drizzle-kit@0.18.1 with no newer upstream fix available. Accepted risk.",
+      "context": {
+        "title": "esbuild: esbuild enables any website to send any requests to the development server and read the response",
+        "file": "esbuild"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:35f8fb8731ff36ec6b94b655fc1048cb",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-29T00:47:42.801Z",
+      "reason": "Verified harmless: dangling commit objects are trivial in size (~1.6MB across 9 objects so far) and self-clean via git's default gc.auto/gc.pruneExpire maintenance. No cleanup needed.",
+      "context": {
+        "title": "Pre‑commit creates dangling Git objects without cleanup",
+        "file": ".husky/pre-commit"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:d59079d40c4ef824bcb6d6db9694ee7d",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-29T00:51:45.207Z",
+      "reason": "Intended design: dismissals require an explicit, human-directed flaught dismiss call (see CLAUDE.md/pre-commit hook comments -- agents don't self-dismiss). Enabling the store doesn't auto-suppress anything on its own.",
+      "context": {
+        "title": "Enabling dismissals in .advreview.yml changes review semantics",
+        "file": ".advreview.yml"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:ab7480703908845e2371a90c235ae735",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-29T02:26:25.119Z",
+      "reason": "Same tradeoff already dismissed for the original dismissal-store-coupling finding: intentional, documented design -- CI and the local gate need shared dismissal state (see .gitignore comment, CLAUDE.md).",
+      "context": {
+        "title": "Tracking review dismissals in source control couples review state to codebase",
+        "file": ".flaught-dismissals.json"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:158c8c825585b1fb8db21ce318731e65",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-29T02:26:25.404Z",
+      "reason": "No test suite exists yet in this project by design (CLAUDE.md) -- tester subagent's work is tracked separately in beads, not blocking a devDependency version bump.",
+      "context": {
+        "title": "No tests added to verify compatibility with @flaught/core@0.9.0",
+        "file": "package.json"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:8f56a0328acc8b8f7fe88e6bb2a5b193",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-29T02:26:25.700Z",
+      "reason": "Low confidence (33%), stylistic opinion about comment length in a prompt-instruction file, not a code defect.",
+      "context": {
+        "title": "Redundant documentation added in .flaught-prompt/system-append.md",
+        "file": ".flaught-prompt/system-append.md"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:af674c55cdaabf51ac12a1632915f1e4",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-29T02:31:19.237Z",
+      "reason": "Not new exposure: this repo's git history already records the same email in every commit's author/committer fields (an unavoidable, standard git mechanism). The dismissal store doesn't expose anything beyond what git itself already does on every commit.",
+      "context": {
+        "title": "Dismissal store contains personal email addresses and internal rationale",
+        "file": ".flaught-dismissals.json"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:8f6730d616731a4bf35005e979658105",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-29T02:33:01.229Z",
+      "reason": "Restates the already-dismissed esbuild/drizzle-kit CVE chain (see D-0001..D-0004 in this same artifact) as a single summary finding. Same accepted risk, not a new issue.",
+      "context": {
+        "title": "Known vulnerable transitive dependencies remain unaddressed",
+        "file": "package.json"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:3b285b3b80948644a47d19fc3da8bef6",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-29T02:33:01.525Z",
+      "reason": "Same dismissal-store-coupling tradeoff already dismissed: intentional, documented design (CI and local gate need shared dismissal state).",
+      "context": {
+        "title": "Coupling review dismissal state to source control introduces merge conflicts",
+        "file": ".flaught-dismissals.json"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:a8e5f421957a6cff103d46f0a380af9e",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-29T02:33:01.817Z",
+      "reason": "Same LLM-code-exposure tradeoff already dismissed (code owner accepts sending staged code to Groq). GROQ_API_KEY being unset is itself the opt-out -- --no-llm path in .husky/pre-commit.",
+      "context": {
+        "title": "Pre‑commit hook now depends on external LLM API without explicit opt‑out",
+        "file": ".github/workflows/ci.yml"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:4deb7a77a8764da8da9fe290b43cd2fa",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-29T02:33:02.111Z",
+      "reason": "Low confidence (35%), same dismissal-store-size tradeoff already dismissed elsewhere in this session.",
+      "context": {
+        "title": "Large dismissal store JSON adds repository bloat and future merge friction",
+        "file": ".flaught-dismissals.json"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:a21152d406d7c1a099198611330404f0",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-29T02:34:15.827Z",
+      "reason": "Same no-test-suite tradeoff already dismissed: no test suite exists yet in this project by design (CLAUDE.md), tester subagent's work is separate future beads work.",
+      "context": {
+        "title": "Version bump of @flaught/core without regression tests",
+        "file": "package.json"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:d3cb8991e9d7de94a846e4028607bcae",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-29T02:34:16.118Z",
+      "reason": "Low confidence (39%). system-append.md is referenced by Flaught's own prompt-loading mechanism implicitly (docs/prompt-templates.md), not meant to be referenced elsewhere in the codebase.",
+      "context": {
+        "title": "Unreferenced documentation file added",
+        "file": ".flaught-prompt/system-append.md"
+      },
+      "expires_at": null
+    }
+  ]
+}
