@@ -198,6 +198,50 @@
         "file": ".flaught-prompt/system-append.md"
       },
       "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:fa4f4200e231290f6a7b61983789e686",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-29T02:50:01.078Z",
+      "reason": "File is 6.3KB. 'Large' is a mischaracterization at this size; not a real payload concern.",
+      "context": {
+        "title": "Large monolithic CSS increases payload size and load time",
+        "file": "public/styles.css"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:71d41c659785e13d87d7e54b3809f0d4",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-29T02:50:01.381Z",
+      "reason": "File has clear section comments (Reset, Typography, Layout primitives, Forms, Status messages, Tables) despite the finding's premise that it lacks organization. One file is a reasonable choice at this size; not a real maintenance risk yet.",
+      "context": {
+        "title": "Monolithic stylesheet hampers future maintenance and scalability",
+        "file": "public/styles.css"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:88224599da3f6c1cd4548afdae1637aa",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-29T02:50:01.682Z",
+      "reason": "Design direction is explicitly in scope -- it's bd issue tktk-lfc.7, part of the planned Sprint 1 work, not an unplanned addition.",
+      "context": {
+        "title": "Design language addition may be scope‑creep beyond the class‑roster MVP",
+        "file": "CLAUDE.md"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:3bdd823d58f2109df091099e9cd7db62",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-29T02:50:01.975Z",
+      "reason": "ViewAsToggle/PromptRunner are prototype/ components, not part of this diff or this commit at all -- prototype/ is supposed to be excluded from review context per .advreview.yml. Appears to be a context leak/hallucination, not a real finding about this change.",
+      "context": {
+        "title": "No tests added for new UI features (Viewing‑as toggle, PromptRunner, etc.)",
+        "file": ".beads/interactions.jsonl"
+      },
+      "expires_at": null
     }
   ]
 }
