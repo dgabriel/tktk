@@ -1,7 +1,7 @@
 # Flaught adversarial review configuration
 # See https://github.com/flaught/core for full documentation
 #
-# Left as Flaught's own generated defaults (`flaught init`) except two
+# Left as Flaught's own generated defaults (`flaught init`) except three
 # deviations, each called out below — see CLAUDE.md "CI adversarial review"
 # for why hand-editing this file beyond necessity is deliberately avoided
 # (a prior MMC incident traced real gaps back to piecemeal config drift,
@@ -73,16 +73,22 @@ tools:
 #   info: 25
 
 # ── Severity gate ──────────────────────────────────────────
-# severity_gate:
-#   fail_on: high  # none | critical | high | medium
+# Deviation 3: enabled (fail_on: high), matching the commented default's own
+# suggested value. Needed for the local pre-commit gate (.husky/pre-commit)
+# to actually block on real findings — the CI `flaught` job stays
+# non-blocking regardless (CLAUDE.md "CI adversarial review"); this only
+# governs the local hook's exit code.
+severity_gate:
+  fail_on: high  # none | critical | high | medium
 
 # ── Dismissals ───────────────────────────────────────────────
 # Findings matching an entry in the dismissal store (see `flaught dismiss`)
 # are auto-marked dismissed on every subsequent run and excluded from the
-# severity gate.
-# dismissals:
-#   enabled: true
-#   path: .flaught-dismissals.json
+# severity gate. Dismissing is a human call (CLAUDE.md) — an agent hitting a
+# blocked commit reports the finding and stops, it doesn't dismiss it.
+dismissals:
+  enabled: true
+  path: .flaught-dismissals.json
 
 # ── Prompt templates ────────────────────────────────────────
 # Override or extend the LLM prompts by dropping files into .flaught-prompt/
