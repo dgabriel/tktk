@@ -11,7 +11,7 @@ import { Layout } from "./views/Layout";
 import { LoginPage, SignupPage } from "./views/Auth";
 import { ClassDetailPage, ClassListPage } from "./views/Classes";
 import { signupTeacher, verifyLogin } from "./lib/auth";
-import { createSessionCookie, type Variables } from "./lib/session";
+import { clearSessionCookie, createSessionCookie, type Variables } from "./lib/session";
 import { requireTeacher } from "./lib/authGuard";
 import { createClass, getClassDetailForTeacher, listClassesForTeacher } from "./lib/classes";
 
@@ -83,12 +83,17 @@ app.post("/auth/login", async (c) => {
   return c.redirect("/classes", 303);
 });
 
+app.post("/auth/logout", (c) => {
+  clearSessionCookie(c);
+  return c.redirect("/auth/login", 303);
+});
+
 app.get("/classes", requireTeacher, async (c) => {
   const session = c.get("session");
   const db = getDb(c.env);
   const classes = await listClassesForTeacher(db, session.userId);
 
-  return c.html(<ClassListPage classes={classes} />);
+  return c.html(<ClassListPage classes={classes} loggedInAs={session.email} />);
 });
 
 app.post("/classes", requireTeacher, async (c) => {
@@ -108,7 +113,15 @@ app.post("/classes", requireTeacher, async (c) => {
 
   if (!result.ok) {
     const classes = await listClassesForTeacher(db, session.userId);
-    return c.html(<ClassListPage classes={classes} errors={result.errors} values={{ name, term, description }} />, 400);
+    return c.html(
+      <ClassListPage
+        classes={classes}
+        loggedInAs={session.email}
+        errors={result.errors}
+        values={{ name, term, description }}
+      />,
+      400,
+    );
   }
 
   return c.redirect(`/classes/${result.id}`, 303);
@@ -123,7 +136,7 @@ app.get("/classes/:id", requireTeacher, async (c) => {
     return c.redirect("/classes", 303);
   }
 
-  return c.html(<ClassDetailPage classDetail={classDetail} />);
+  return c.html(<ClassDetailPage classDetail={classDetail} loggedInAs={session.email} />);
 });
 
 export default app;

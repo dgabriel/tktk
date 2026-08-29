@@ -13,10 +13,11 @@ export type ClassFormValues = { name?: string; term?: string; description?: stri
 
 export const ClassListPage: FC<{
   classes: ClassListItem[];
+  loggedInAs: string;
   errors?: ClassFormErrors;
   values?: ClassFormValues;
-}> = ({ classes, errors = {}, values = {} }) => (
-  <Layout title="Your classes">
+}> = ({ classes, loggedInAs, errors = {}, values = {} }) => (
+  <Layout title="Your classes" loggedInAs={loggedInAs}>
     <main class="container stack">
       <h1>Your classes</h1>
 
@@ -83,8 +84,11 @@ export const ClassListPage: FC<{
   </Layout>
 );
 
-export const ClassDetailPage: FC<{ classDetail: ClassDetail }> = ({ classDetail }) => (
-  <Layout title={classDetail.name}>
+export const ClassDetailPage: FC<{ classDetail: ClassDetail; loggedInAs: string }> = ({
+  classDetail,
+  loggedInAs,
+}) => (
+  <Layout title={classDetail.name} loggedInAs={loggedInAs}>
     <main class="container stack">
       <p>
         <a href="/classes">&larr; Your classes</a>

@@ -7,7 +7,11 @@
 
 import type { FC, PropsWithChildren } from "hono/jsx";
 
-export const Layout: FC<PropsWithChildren<{ title?: string }>> = ({ title, children }) => (
+export const Layout: FC<PropsWithChildren<{ title?: string; loggedInAs?: string }>> = ({
+  title,
+  loggedInAs,
+  children,
+}) => (
   <html lang="en">
     <head>
       <meta charset="utf-8" />
@@ -16,6 +20,18 @@ export const Layout: FC<PropsWithChildren<{ title?: string }>> = ({ title, child
       <link rel="stylesheet" href="/styles.css" />
       <script src="https://unpkg.com/htmx.org@4.0.0"></script>
     </head>
-    <body>{children}</body>
+    <body>
+      {loggedInAs && (
+        <header class="topbar">
+          <span class="text-sm text-muted">Logged in as {loggedInAs}</span>
+          <form method="post" action="/auth/logout">
+            <button type="submit" class="btn-secondary">
+              Log out
+            </button>
+          </form>
+        </header>
+      )}
+      {children}
+    </body>
   </html>
 );
