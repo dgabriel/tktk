@@ -1,9 +1,20 @@
 # tktk — MVP Kickoff Brief
 
-**Status:** Draft for scaffolding
+**Status:** Draft for scaffolding — see note below on what's since changed.
 **Scope:** MVP (not PoC) — class + roster management only
-**Stack:** Cloudflare Workers (Hono) + D1 (Drizzle) + htmx 4.0 (server-rendered via Hono JSX) + Resend (auth)
+**Stack:** Cloudflare Workers (Hono) + D1 (Drizzle) + htmx 4.0 (server-rendered via Hono JSX) + Resend (invite delivery)
 **Agentic workflow:** Claude Code, MMC-style subagents, beads (`bd`) for issue tracking
+
+> **Note (2026-08-29):** This document is kept as the original scaffolding-time
+> spec, not updated in place — supersessions are tracked in `CLAUDE.md`
+> ("Decisions made during scaffolding"), not here. The one change that affects
+> how you should read this whole document: **auth is username + password, not
+> magic-link** — §4 and the `/auth/*` routes in §5 describe the original
+> magic-link design, which was replaced after scaffolding for login UX
+> reasons. Resend is still used, just for invite delivery only (§4's
+> teacher-invite path), not for authentication. Everything else in this brief
+> (data model, tenancy, route surface for `/classes/*`, open decisions) is
+> still the operative spec unless `CLAUDE.md` says otherwise.
 
 ---
 

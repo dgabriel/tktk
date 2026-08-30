@@ -30,7 +30,8 @@ The repo also contains `prototype/` — an earlier React+Vite feedback-annotatio
 
 - Work is tracked in beads (`bd`), not GitHub Issues or any external tracker.
 - Subagent roles (see `.claude/agents/`): `product-manager`, `developer`, `tester`, `reviewer`, `ui-agent`. Route work to the matching subagent rather than doing cross-cutting work in one shot.
-- Conventional Commits, enforced via commitlint/Husky. PRs trigger lint/typecheck/test + preview deploy; merge to `main` deploys prod. PRs also get a non-blocking Flaught adversarial-review pass (see "CI adversarial review" below).
+- Conventional Commits, enforced via commitlint/Husky. Non-chore/docs/ci/style/build/revert commits need a `Bead: <id>` trailer (`.husky/commit-msg`, `scripts/check_bead_trailer.py`) so git history and the bd issue graph join exactly. Start work with `scripts/bead-start.sh <bd-id>` (syncs `main`, branches, claims the issue in one step) rather than a manual branch/claim sequence. Full branch/PR conventions: `docs/git-hygiene.md`.
+- PRs trigger lint/typecheck/test + preview deploy; merge to `main` deploys prod. PRs also get a non-blocking Flaught adversarial-review pass (see "CI adversarial review" below); the local `pre-commit`/`pre-push` hooks catch lint/typecheck/Flaught findings before a push even happens.
 
 ## CI adversarial review (Flaught)
 
