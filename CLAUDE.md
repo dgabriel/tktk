@@ -2,11 +2,13 @@
 
 Base guidelines for any agent (subagent or interactive) working in this repo. Read this before touching code.
 
-## What tktk is (this milestone)
+## What tktk is
 
-A class + roster management MVP for a writing-workshop mini-LMS. **This milestone is scope-limited to classes and rosters.** Do not scaffold assignments, submissions, feedback, grading, or peer-review features, even if they seem like natural next steps — that's deliberately deferred. If a task seems to require one of those, stop and flag it rather than building around it.
+A writing-workshop mini-LMS. The first milestone (`tktk-lfc`, complete) covered class + roster management: auth, class CRUD, co-teacher management, join-code enrollment, invite-by-email (including bulk paste), roster view/removal, and schedule-only class sessions.
 
-The repo also contains `prototype/` — an earlier React+Vite feedback-annotation prototype for the fuller workshop-LMS vision (unrelated stack, unrelated beads epic `tktk-seb`). It's kept for reference only. Nothing in this milestone builds on it, imports from it, or shares tooling with it.
+**The current milestone (`tktk-42u`) extends scope to class content: teacher-authored lessons (text content per class session, no due-date/prompt sub-types yet) and a per-class reading list, on a new per-class content page, with a real auth-gated student-facing view plus a teacher "preview as a student" convenience mode** (a render-mode on the already-teacher-gated route, not a session swap or auth bypass — see `tktk-42u.6`). This does **not** include poem/assignment submission, feedback or annotation (text-highlight or freehand markup), grading, or peer review — those remain deliberately deferred, same as before, pending their own scoping pass. The freehand-markup surface in particular is in real tension with rule 3 below (no client-side state, `hx-*` only) and needs an architecture decision before it's ever sized, not just a bigger sprint. If a task seems to require submission tracking, feedback/commenting, grading, or peer review, stop and flag it rather than building around it.
+
+The repo also contains `prototype/` — an earlier React+Vite exploration of the fuller product vision (different stack, different beads epic `tktk-seb`). It remains a **UX/product reference only** — the "no React, no client build step" stack rule below is unaffected by this scope change. Two things so far have been rebuilt (not ported) from it: the Sessions feature (`tktk-dfy`) and the bulk-invite "paste a contact list, extract emails" tool (`tktk-lfc.12`). The current milestone's Lessons/Readings features are inspired by `prototype/`'s `Lesson`/`LessonSegment`/`Reading` types and `LessonEditor.tsx`/`ReadingsList.tsx` the same way — reference for what the feature should do, never code to import.
 
 ## Stack
 
@@ -78,3 +80,6 @@ These resolve gaps in the kickoff brief that blocked scaffolding a working skele
 ## Open decisions not yet made
 
 See §9 of the MVP kickoff brief (`00-tktk-mvp-kickoff-brief.md`) for the full list; the items resolved above are marked as such. Don't silently resolve the rest — surface them.
+
+- **Rich-text editing mechanism for lesson content (`tktk-42u.3`).** `prototype/`'s `LessonEditor.tsx` uses `contentEditable`/`document.execCommand` — a deprecated, browser-inconsistent API. Don't default to porting that. Needs a deliberate call (constrained markdown-lite? something else compatible with server-rendered JSX + `hx-*` only, no client framework?) before `tktk-42u.3` is implemented — flag to the user/`ui-agent` rather than picking silently.
+- **Whether `lesson_segments.openAt` (or equivalent) is real access control or just a display label.** The prototype only ever did the latter (an instructor-facing "opens at" status, no actual gating — it had no student view to gate). Now that `tktk-42u.5` adds a real student view, decide explicitly which this is before shipping it as either.
