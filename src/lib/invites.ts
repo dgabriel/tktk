@@ -143,11 +143,14 @@ export async function createInvite(db: Db, input: CreateInviteInput): Promise<Cr
   return { ok: true, token };
 }
 
-export type PendingInvite = { email: string; createdAt: string };
+// `id` doubles as the placeholder users row's id (see module note above) --
+// this is what lets the roster view point the same DELETE
+// /classes/:id/students/:userId route at a pending invite's "Revoke" button.
+export type PendingInvite = { id: string; email: string; createdAt: string };
 
 export async function listPendingInvites(db: Db, classId: string): Promise<PendingInvite[]> {
   return db
-    .select({ email: invites.email, createdAt: invites.createdAt })
+    .select({ id: invites.id, email: invites.email, createdAt: invites.createdAt })
     .from(invites)
     .where(and(eq(invites.classId, classId), eq(invites.status, "pending")));
 }

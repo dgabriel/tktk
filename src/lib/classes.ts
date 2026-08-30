@@ -4,7 +4,7 @@
 
 import { eq, and } from "drizzle-orm";
 import type { Db } from "../db";
-import { classes, classTeachers, users } from "../db/schema";
+import { classes, classTeachers, classStudents, invites, users } from "../db/schema";
 
 // Human-typeable join code: uppercase letters + digits, excluding visually
 // ambiguous characters (0/O, 1/I) per kickoff brief §3.
@@ -118,6 +118,12 @@ export type ClassDetail = {
     email: string;
     role: string;
   }>;
+  students: Array<{
+    userId: string;
+    name: string | null;
+    username: string;
+    email: string;
+  }>;
 };
 
 // Returns null both when the class doesn't exist and when the requesting
@@ -149,6 +155,19 @@ export async function getClassDetailForTeacher(
     .innerJoin(users, eq(classTeachers.userId, users.id))
     .where(eq(classTeachers.classId, classId));
 
+  // Active only -- invited-but-not-yet-joined rows are surfaced separately
+  // via listPendingInvites (invites.ts), not mixed into this roster list.
+  const studentRows = await db
+    .select({
+      userId: users.id,
+      name: users.name,
+      username: users.username,
+      email: users.email,
+    })
+    .from(classStudents)
+    .innerJoin(users, eq(classStudents.userId, users.id))
+    .where(and(eq(classStudents.classId, classId), eq(classStudents.status, "active")));
+
   return {
     id: classRow.id,
     name: classRow.name,
@@ -156,6 +175,7 @@ export async function getClassDetailForTeacher(
     term: classRow.term,
     joinCode: classRow.joinCode,
     teachers: teacherRows,
+    students: studentRows,
   };
 }
 
@@ -203,5 +223,50 @@ export async function addCoTeacher(db: Db, input: { classId: string; email: stri
     throw err;
   }
 
+  return { ok: true };
+}
+
+export type RemoveClassMemberResult = { ok: true } | { ok: false; error: "not_found" };
+
+// Backs DELETE /classes/:id/students/:userId (kickoff brief §5). One route
+// covers two different underlying cases, because of how invites.ts's
+// placeholder-user pattern already works:
+//   - class_students.status === "active": userId is a real, joined
+//     student's users row -- just delete the class_students row.
+//   - class_students.status === "invited": userId is actually the
+//     placeholder users row invites.ts created at invite time, sharing the
+//     invite's own id (see invites.ts module comment). Removing this is
+//     really "revoke the invite," not "remove a student who never joined" --
+//     delete class_students, delete the now-unreferenced placeholder users
+//     row, and mark the invites row revoked. Mirrors the cleanup
+//     attachInviteToExistingUser (invites.ts) already does for its own
+//     placeholder-cleanup case, including the delete order (class_students
+//     before users) so nothing ever references the placeholder row at the
+//     moment it's removed -- D1 checks FKs per-statement, not just at commit.
+// Callers are responsible for the class-membership check (via
+// getClassDetailForTeacher) before calling this, same as addCoTeacher.
+export async function removeClassMember(
+  db: Db,
+  input: { classId: string; userId: string },
+): Promise<RemoveClassMemberResult> {
+  const membership = await db.query.classStudents.findFirst({
+    where: and(eq(classStudents.classId, input.classId), eq(classStudents.userId, input.userId)),
+  });
+  if (!membership) return { ok: false, error: "not_found" };
+
+  if (membership.status === "active") {
+    await db
+      .delete(classStudents)
+      .where(and(eq(classStudents.classId, input.classId), eq(classStudents.userId, input.userId)));
+    return { ok: true };
+  }
+
+  await db.batch([
+    db
+      .delete(classStudents)
+      .where(and(eq(classStudents.classId, input.classId), eq(classStudents.userId, input.userId))),
+    db.delete(users).where(eq(users.id, input.userId)),
+    db.update(invites).set({ status: "revoked" }).where(eq(invites.id, input.userId)),
+  ]);
   return { ok: true };
 }

@@ -1,8 +1,11 @@
-// Class list + class detail pages. Plain server-rendered forms/links (no
-// hx-* attributes) -- same reasoning as Auth.tsx: full browser
-// POST/redirect is the simplest correct thing here, and these routes are
-// never hit via hx-push-url, so CLAUDE.md rule 3a's HX-Request branching
-// doesn't apply yet.
+// Class list + class detail pages. The create-class/add-co-teacher/
+// invite-student forms are plain server-rendered forms (no hx-* attributes)
+// -- same reasoning as Auth.tsx: full browser POST/redirect is the simplest
+// correct thing here, and none of those routes are hit via hx-push-url, so
+// CLAUDE.md rule 3a's HX-Request branching doesn't apply to them. The
+// Remove/Revoke buttons in the Students and Pending invites tables are the
+// exception -- real hx-delete row removal, not a page navigation; see the
+// route comment in src/index.tsx and htmx-4.0-notes.md.
 
 import type { FC } from "hono/jsx";
 import { Layout } from "./Layout";
@@ -170,6 +173,43 @@ export const ClassDetailPage: FC<{
       </div>
 
       <div class="panel stack">
+        <h2>Students</h2>
+        {classDetail.students.length === 0 ? (
+          <p class="text-muted">No active students yet.</p>
+        ) : (
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {classDetail.students.map((student) => (
+                <tr>
+                  <td>{student.name || student.username}</td>
+                  <td>{student.email}</td>
+                  <td>
+                    <button
+                      type="button"
+                      class="btn-secondary"
+                      hx-delete={`/classes/${classDetail.id}/students/${student.userId}`}
+                      hx-confirm={`Remove ${student.name || student.username} from this class?`}
+                      hx-target="closest tr"
+                      hx-swap="delete"
+                    >
+                      Remove
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+
+      <div class="panel stack">
         <h2>Invite a student</h2>
         {inviteSuccess && <p class="message message-success">{inviteSuccess}</p>}
         {inviteError && <p class="message message-error">{inviteError}</p>}
@@ -197,6 +237,7 @@ export const ClassDetailPage: FC<{
                 <tr>
                   <th>Email</th>
                   <th>Invited</th>
+                  <th></th>
                 </tr>
               </thead>
               <tbody>
@@ -204,6 +245,18 @@ export const ClassDetailPage: FC<{
                   <tr>
                     <td>{invite.email}</td>
                     <td>{invite.createdAt}</td>
+                    <td>
+                      <button
+                        type="button"
+                        class="btn-secondary"
+                        hx-delete={`/classes/${classDetail.id}/students/${invite.id}`}
+                        hx-confirm={`Revoke the invite to ${invite.email}?`}
+                        hx-target="closest tr"
+                        hx-swap="delete"
+                      >
+                        Revoke
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>

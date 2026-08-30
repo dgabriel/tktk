@@ -15,7 +15,13 @@ import { JoinPage } from "./views/Join";
 import { signupTeacher, verifyLogin } from "./lib/auth";
 import { clearSessionCookie, createSessionCookie, readSession, type Variables } from "./lib/session";
 import { requireTeacher } from "./lib/authGuard";
-import { addCoTeacher, createClass, getClassDetailForTeacher, listClassesForTeacher } from "./lib/classes";
+import {
+  addCoTeacher,
+  createClass,
+  getClassDetailForTeacher,
+  listClassesForTeacher,
+  removeClassMember,
+} from "./lib/classes";
 import {
   acceptInvite,
   attachInviteToExistingUser,
@@ -246,6 +252,33 @@ app.post("/classes/:id/invites", requireTeacher, async (c) => {
   return c.html(
     <ClassDetailPage classDetail={classDetail} loggedInAs={session.email} pendingInvites={pendingInvites} inviteSuccess={inviteSuccess} />,
   );
+});
+
+// htmx-driven row removal, not a page navigation -- never reached via
+// hx-push-url, so CLAUDE.md rule 3a's HX-Request full-page-vs-fragment
+// branching doesn't apply here (see htmx-4.0-notes.md). Empty response is
+// the whole contract: hx-swap="delete" on the caller's button just removes
+// the target element regardless of body content.
+app.delete("/classes/:id/students/:userId", requireTeacher, async (c) => {
+  const session = c.get("session");
+  const db = getDb(c.env);
+  const classId = c.req.param("id");
+  const userId = c.req.param("userId");
+
+  // Same class-membership check as every other /classes/:id/* route --
+  // "no such class" and "not one of its teachers" are both a 404 here, not
+  // distinguished (getClassDetailForTeacher already collapses them).
+  const classDetail = await getClassDetailForTeacher(db, classId, session.userId);
+  if (!classDetail) {
+    return c.body(null, 404);
+  }
+
+  const result = await removeClassMember(db, { classId, userId });
+  if (!result.ok) {
+    return c.body(null, 404);
+  }
+
+  return c.body(null, 200);
 });
 
 app.get("/invites/:token", async (c) => {
