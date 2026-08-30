@@ -6,17 +6,17 @@ Last updated: 2026-08-30
 
 ## Where we are
 
-**Class + roster foundation (tktk-lfc epic): 4/7 done**
+**Class + roster foundation (tktk-lfc epic): 7/7 done, epic eligible for close**
 
 - [x] Design direction (palette, type, CSS approach)
 - [x] Auth — signup/login/session
 - [x] Class CRUD — create, list, detail
 - [x] Invite-by-email flow
-- [ ] Co-teacher management
-- [ ] Join-code flow (student self-serve)
-- [ ] Roster view + student removal
+- [x] Co-teacher management
+- [x] Join-code flow (student self-serve)
+- [x] Roster view + student removal
 
-Remaining 3 are independent of each other — any order.
+Not yet: testing pass (this milestone has no automated test suite; everything's been verified manually against a real local D1, including one real headless-browser pass for the roster's htmx interaction). Epic itself left open pending that.
 
 ## Bigger picture (three phases)
 
