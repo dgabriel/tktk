@@ -1,8 +1,5 @@
 // Hono app entry. Route handlers stay thin (CLAUDE.md rule 3) — business
-// logic belongs in src/lib/, views in src/views/. This currently has one
-// real route, proving Workers + D1 binding + Drizzle + Hono JSX + htmx all
-// boot together; the actual class/roster/auth routes (kickoff brief §5) are
-// tracked as beads issues for `developer` rather than stubbed out here.
+// logic belongs in src/lib/, views in src/views/.
 
 import { Hono } from "hono";
 import type { Env } from "./db";
@@ -35,16 +32,44 @@ import { sendInviteEmail } from "./lib/email";
 const app = new Hono<{ Bindings: Env; Variables: Variables }>();
 
 app.get("/", async (c) => {
-  // Touches the DB binding through the one sanctioned access point (src/db.ts)
-  // to prove the D1 binding is wired correctly, even though this route has
-  // nothing to query yet.
-  getDb(c.env);
+  const session = await readSession(c, c.env.SESSION_SECRET);
+
+  // Teachers land on their real home page. Students have no dashboard yet
+  // in this MVP (the whole built UI so far is teacher-facing, same gap
+  // every post-signup/accept/join redirect already notes) -- give them an
+  // honest logged-in placeholder instead of silently bouncing them
+  // somewhere that pretends there's more here than there is.
+  if (session?.role === "teacher") {
+    return c.redirect("/classes", 303);
+  }
+
+  if (session) {
+    return c.html(
+      <Layout title="tktk" loggedInAs={session.email}>
+        <main class="container-narrow">
+          <h1>tktk</h1>
+          <p>You're signed in. There's no student dashboard yet in this MVP.</p>
+        </main>
+      </Layout>,
+    );
+  }
 
   return c.html(
     <Layout title="tktk">
-      <main>
+      <main class="container-narrow stack">
         <h1>tktk</h1>
-        <p>Class + roster management — scaffolding in progress.</p>
+        <p class="text-muted">Class and roster management for writing workshops.</p>
+        <div class="panel stack">
+          <a class="btn" href="/auth/login">
+            Log in
+          </a>
+          <a class="btn-secondary" href="/auth/signup">
+            Sign up as a teacher
+          </a>
+          <a class="btn-secondary" href="/join">
+            Join a class with a code
+          </a>
+        </div>
       </main>
     </Layout>,
   );
