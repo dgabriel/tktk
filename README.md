@@ -11,9 +11,11 @@ Full architecture, conventions, and the decisions made along the way live in [`C
 ```bash
 npm install
 cp .dev.vars.example .dev.vars   # fill in a real SESSION_SECRET; RESEND_API_KEY can stay a placeholder (invite emails log to the console instead)
-npm run db:migrate:local         # applies drizzle/*.sql to a local D1 emulation, no Cloudflare account needed
+npm run db:migrate:local         # applies drizzle/*.sql to a local D1 emulation (no Cloudflare account needed), then seeds a fixed test account
 npm run dev                      # wrangler dev, http://localhost:8787
 ```
+
+Log in with `teacher@tktk.test` / `password123` (seeded by `db:seed:local`, chained onto `db:migrate:local` above — see `scripts/seed-local.ts`). Re-running either command is safe; it just refreshes that one row rather than duplicating it, so the account survives the local-D1 wipes that schema changes tend to require.
 
 ## Other commands
 
