@@ -60,6 +60,23 @@ function placeholderEmail(id: string): string {
   return `invite-pending-${id}@${PLACEHOLDER_EMAIL_DOMAIN}`;
 }
 
+// Ported from the old React prototype's EmailListCleaner
+// (prototype/src/components/EmailListCleaner.tsx) -- same pattern, same
+// "just grab the email shape out of pasted text" approach. A teacher pasting
+// a Gmail contact list here hits the exact "Name <email@x.com>, Other Name
+// <other@x.com>" shape that tool was built for; matching the address pattern
+// strips the display name and angle brackets in one pass instead of trying
+// to parse them explicitly. This is the *authoritative* parse -- the invite
+// panel's "Clean up list" button (POST /classes/:id/invites/clean) calls
+// this same function for its preview, so there's no separate client-side
+// copy of the pattern that could drift from what actually gets invited.
+const EMAIL_PATTERN = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
+
+export function extractEmails(raw: string): string[] {
+  const matches = raw.match(EMAIL_PATTERN) ?? [];
+  return Array.from(new Set(matches.map((match) => normalizeEmail(match))));
+}
+
 // ---------------------------------------------------------------------------
 // Creating an invite
 
@@ -136,6 +153,29 @@ export async function createInvite(db: Db, input: CreateInviteInput): Promise<Cr
   ]);
 
   return { ok: true, token };
+}
+
+// Bulk version of createInvite -- one call per email, sequentially (not
+// db.batch'd together): each createInvite already does its own
+// duplicate/membership checks against current DB state, and a pasted list
+// occasionally contains an accidental repeat, so later entries need to see
+// earlier ones' writes rather than racing them. Not a hot path (dozens of
+// students, not thousands), so the sequential round-trips are fine.
+export type BulkInviteResult = { email: string } & (
+  | { ok: true; token: string }
+  | { ok: false; error: string }
+);
+
+export async function createInvites(
+  db: Db,
+  input: { classId: string; emails: string[]; invitedBy: string },
+): Promise<BulkInviteResult[]> {
+  const results: BulkInviteResult[] = [];
+  for (const email of input.emails) {
+    const result = await createInvite(db, { classId: input.classId, email, invitedBy: input.invitedBy });
+    results.push(result.ok ? { email, ok: true, token: result.token } : { email, ok: false, error: result.error });
+  }
+  return results;
 }
 
 // `id` doubles as the placeholder users row's id (see module note above) --

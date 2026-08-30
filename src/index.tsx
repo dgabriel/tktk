@@ -6,7 +6,7 @@ import type { Env } from "./db";
 import { getDb } from "./db";
 import { Layout } from "./views/Layout";
 import { LoginPage, SignupPage } from "./views/Auth";
-import { ClassDetailPage, ClassListPage } from "./views/Classes";
+import { ClassDetailPage, ClassListPage, InviteEmailsField } from "./views/Classes";
 import { InviteAcceptPage } from "./views/Invites";
 import { JoinPage } from "./views/Join";
 import { signupTeacher, verifyLogin } from "./lib/auth";
@@ -22,7 +22,8 @@ import {
 import {
   acceptInvite,
   attachInviteToExistingUser,
-  createInvite,
+  createInvites,
+  extractEmails,
   getInviteForAcceptance,
   listPendingInvites,
 } from "./lib/invites";
@@ -228,6 +229,29 @@ app.post("/classes/:id/teachers", requireTeacher, async (c) => {
   );
 });
 
+// Server-side "Clean up list" preview for the invite panel's textarea --
+// htmx-driven in-place swap, not a page navigation (never reached via
+// hx-push-url), so CLAUDE.md rule 3a's HX-Request branching doesn't apply
+// here, same reasoning as the delete-row routes below. Runs the exact same
+// extractEmails() the real submit route uses, so what the teacher previews
+// is never out of sync with what actually gets invited.
+app.post("/classes/:id/invites/clean", requireTeacher, async (c) => {
+  const session = c.get("session");
+  const db = getDb(c.env);
+  const classId = c.req.param("id");
+
+  const classDetail = await getClassDetailForTeacher(db, classId, session.userId);
+  if (!classDetail) {
+    return c.body(null, 404);
+  }
+
+  const body = await c.req.parseBody();
+  const raw = String(body.emails ?? "");
+  const emails = extractEmails(raw);
+
+  return c.html(<InviteEmailsField classId={classId} value={emails.join(", ")} foundCount={emails.length} />);
+});
+
 app.post("/classes/:id/invites", requireTeacher, async (c) => {
   const session = c.get("session");
   const db = getDb(c.env);
@@ -242,41 +266,72 @@ app.post("/classes/:id/invites", requireTeacher, async (c) => {
   }
 
   const body = await c.req.parseBody();
-  const email = String(body.email ?? "").trim();
+  const raw = String(body.emails ?? "");
+  const emails = extractEmails(raw);
 
-  const result = await createInvite(db, { classId, email, invitedBy: session.userId });
-
-  if (!result.ok) {
+  if (emails.length === 0) {
     const pendingInvites = await listPendingInvites(db, classId);
     return c.html(
       <ClassDetailPage
         classDetail={classDetail}
         loggedInAs={session.email}
         pendingInvites={pendingInvites}
-        inviteError={result.error}
-        inviteValues={{ email }}
+        inviteError="Paste at least one valid email address."
+        inviteValues={{ emails: raw }}
       />,
       400,
     );
   }
 
-  const origin = new URL(c.req.url).origin;
-  const inviteLink = `${origin}/invites/${result.token}`;
+  const results = await createInvites(db, { classId, emails, invitedBy: session.userId });
+  const invited = results.filter((r) => r.ok);
+  const rejected = results.filter((r): r is Extract<(typeof results)[number], { ok: false }> => !r.ok);
 
-  let inviteSuccess = `Invite sent to ${email}.`;
-  try {
-    await sendInviteEmail(c.env, { to: email, inviteLink, className: classDetail.name });
-  } catch (err) {
-    // The invites/class_students rows are already committed at this point --
-    // a Resend failure shouldn't roll that back, just surface it distinctly
-    // so the teacher knows the student won't have gotten an email.
-    console.error("Failed to send invite email:", err);
-    inviteSuccess = `Invite created for ${email}, but the email failed to send.`;
+  const origin = new URL(c.req.url).origin;
+  const sendFailures: string[] = [];
+  for (const result of invited) {
+    const inviteLink = `${origin}/invites/${result.token}`;
+    try {
+      await sendInviteEmail(c.env, { to: result.email, inviteLink, className: classDetail.name });
+    } catch (err) {
+      // The invites/class_students rows are already committed at this point --
+      // a Resend failure shouldn't roll that back, just surface it distinctly
+      // so the teacher knows which students won't have gotten an email.
+      console.error("Failed to send invite email:", err);
+      sendFailures.push(result.email);
+    }
+  }
+
+  if (invited.length === 0) {
+    const pendingInvites = await listPendingInvites(db, classId);
+    return c.html(
+      <ClassDetailPage
+        classDetail={classDetail}
+        loggedInAs={session.email}
+        pendingInvites={pendingInvites}
+        inviteError={rejected.map((r) => `${r.email}: ${r.error}`).join(" ")}
+        inviteValues={{ emails: raw }}
+      />,
+      400,
+    );
+  }
+
+  let inviteSuccess = `Invited ${invited.length} student${invited.length === 1 ? "" : "s"}.`;
+  if (sendFailures.length > 0) {
+    inviteSuccess += ` ${sendFailures.length} email${sendFailures.length === 1 ? "" : "s"} failed to send (${sendFailures.join(", ")}).`;
+  }
+  if (rejected.length > 0) {
+    inviteSuccess += ` Skipped ${rejected.length}: ${rejected.map((r) => `${r.email} (${r.error})`).join("; ")}.`;
   }
 
   const pendingInvites = await listPendingInvites(db, classId);
   return c.html(
-    <ClassDetailPage classDetail={classDetail} loggedInAs={session.email} pendingInvites={pendingInvites} inviteSuccess={inviteSuccess} />,
+    <ClassDetailPage
+      classDetail={classDetail}
+      loggedInAs={session.email}
+      pendingInvites={pendingInvites}
+      inviteSuccess={inviteSuccess}
+    />,
   );
 });
 
