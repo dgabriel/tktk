@@ -11,6 +11,7 @@ import { Layout } from "./views/Layout";
 import { LoginPage, SignupPage } from "./views/Auth";
 import { ClassDetailPage, ClassListPage } from "./views/Classes";
 import { InviteAcceptPage } from "./views/Invites";
+import { JoinPage } from "./views/Join";
 import { signupTeacher, verifyLogin } from "./lib/auth";
 import { clearSessionCookie, createSessionCookie, readSession, type Variables } from "./lib/session";
 import { requireTeacher } from "./lib/authGuard";
@@ -22,6 +23,7 @@ import {
   getInviteForAcceptance,
   listPendingInvites,
 } from "./lib/invites";
+import { joinClassAsExistingUser, joinClassWithSignup } from "./lib/join";
 import { sendInviteEmail } from "./lib/email";
 
 const app = new Hono<{ Bindings: Env; Variables: Variables }>();
@@ -326,6 +328,78 @@ app.post("/invites/:token", async (c) => {
   // this issue (see kickoff brief: only teacher UI has been built so far).
   // Redirect home rather than to a page that doesn't exist; revisit once a
   // student homepage lands.
+  return c.redirect("/", 303);
+});
+
+app.get("/join", async (c) => {
+  const session = await readSession(c, c.env.SESSION_SECRET);
+  return c.html(<JoinPage mode={session ? "member" : "signup"} />);
+});
+
+app.post("/join", async (c) => {
+  const session = await readSession(c, c.env.SESSION_SECRET);
+  const db = getDb(c.env);
+  const body = await c.req.parseBody();
+  const joinCode = String(body.joinCode ?? "").trim();
+
+  if (session) {
+    const result = await joinClassAsExistingUser(db, { joinCode, userId: session.userId, role: session.role });
+
+    if (!result.ok) {
+      const error =
+        result.status === "invalid_code"
+          ? "That join code isn't valid."
+          : result.status === "not_a_student"
+            ? "Teacher accounts can't join a class as a student."
+            : "You're already a member of that class.";
+      const statusCode = result.status === "invalid_code" ? 404 : result.status === "not_a_student" ? 403 : 409;
+      return c.html(<JoinPage mode="member" error={error} joinCode={joinCode} />, statusCode);
+    }
+
+    // No student-facing dashboard exists yet in this MVP (teacher-only UI so
+    // far, same gap noted in the invite-acceptance route) -- redirect home
+    // rather than to a page that doesn't exist.
+    return c.redirect("/", 303);
+  }
+
+  const username = String(body.username ?? "").trim();
+  const email = String(body.email ?? "").trim();
+  const password = String(body.password ?? "");
+
+  const result = await joinClassWithSignup(db, { joinCode, username, email, password });
+
+  if (!result.ok) {
+    if (result.status === "invalid_code") {
+      return c.html(
+        <JoinPage mode="signup" error="That join code isn't valid." joinCode={joinCode} values={{ username, email }} />,
+        404,
+      );
+    }
+    if (result.status === "validation") {
+      return c.html(
+        <JoinPage mode="signup" joinCode={joinCode} errors={result.errors} values={{ username, email }} />,
+        400,
+      );
+    }
+    // conflict: a concurrent request took the same username/email between
+    // this request's pre-check and its insert.
+    return c.html(
+      <JoinPage
+        mode="signup"
+        error="That username or email was just taken. Try again."
+        joinCode={joinCode}
+        values={{ username, email }}
+      />,
+      409,
+    );
+  }
+
+  await createSessionCookie(c, c.env.SESSION_SECRET, {
+    userId: result.user.id,
+    email: result.user.email,
+    role: "student",
+  });
+
   return c.redirect("/", 303);
 });
 

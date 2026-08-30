@@ -23,7 +23,7 @@ function generateJoinCode(): string {
   return code;
 }
 
-function isUniqueConstraintError(err: unknown): boolean {
+export function isUniqueConstraintError(err: unknown): boolean {
   return err instanceof Error && /unique constraint/i.test(err.message);
 }
 
