@@ -28,3 +28,12 @@ dist-ssr
 *.db
 .beads-credential-key
 .beads/proxieddb/
+
+# tktk MVP (Cloudflare Workers / wrangler / D1)
+.wrangler/
+.dev.vars
+*.sqlite
+findings.json
+
+# .flaught-dismissals.json is intentionally tracked, not ignored -- it's the
+# shared dismissal store CI and the local pre-commit gate both read.

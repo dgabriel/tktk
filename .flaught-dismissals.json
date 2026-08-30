@@ -1,0 +1,478 @@
+{
+  "version": 1,
+  "dismissals": [
+    {
+      "fingerprint": "sha256:87d9a835b018af9da0181008acad728e",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-29T00:35:10.890Z",
+      "reason": "Code owner understands and accepts the risk of sending staged code to Groq's API via the LLM review pass; otherwise a valid finding.",
+      "context": {
+        "title": "Potential source code exfiltration via LLM in pre-commit",
+        "file": ".husky/pre-commit"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:ac97ecbca2f13fdbe19c381eedd0e575",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-29T00:35:40.261Z",
+      "reason": "Deliberate tradeoff -- the whole point of the LLM pass is a real adversarial review before commit; slower commits are the accepted cost.",
+      "context": {
+        "title": "New dev dependency expands supply‑chain attack surface",
+        "file": "package.json"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:e59ae858b28399a974963798491833a8",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-29T00:47:08.725Z",
+      "reason": "esbuild dev-server CORS vuln (GHSA-67mh-4wv8-2f99), transitive via drizzle-kit's internal @esbuild-kit/* tooling -- no network-exposed dev server in this app, and the only fix is a breaking downgrade to drizzle-kit@0.18.1 with no newer upstream fix available. Accepted risk.",
+      "context": {
+        "title": "@esbuild-kit/core-utils: Vulnerability in @esbuild-kit/core-utils (*)",
+        "file": "@esbuild-kit/core-utils"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:2e5fde5ba2ab2e1f57760a0357c67b12",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-29T00:47:09.023Z",
+      "reason": "esbuild dev-server CORS vuln (GHSA-67mh-4wv8-2f99), transitive via drizzle-kit's internal @esbuild-kit/* tooling -- no network-exposed dev server in this app, and the only fix is a breaking downgrade to drizzle-kit@0.18.1 with no newer upstream fix available. Accepted risk.",
+      "context": {
+        "title": "@esbuild-kit/esm-loader: Vulnerability in @esbuild-kit/esm-loader (*)",
+        "file": "@esbuild-kit/esm-loader"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:9fd827248b064947ca8d7685f62dd72b",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-29T00:47:09.317Z",
+      "reason": "esbuild dev-server CORS vuln (GHSA-67mh-4wv8-2f99), transitive via drizzle-kit's internal @esbuild-kit/* tooling -- no network-exposed dev server in this app, and the only fix is a breaking downgrade to drizzle-kit@0.18.1 with no newer upstream fix available. Accepted risk.",
+      "context": {
+        "title": "drizzle-kit: Vulnerability in drizzle-kit (0.19.0 - 1.0.0-beta.1-fd8bfcc)",
+        "file": "drizzle-kit"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:6c25cba07fd9341f0102d9e6a0cb72cb",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-29T00:47:09.618Z",
+      "reason": "esbuild dev-server CORS vuln (GHSA-67mh-4wv8-2f99), transitive via drizzle-kit's internal @esbuild-kit/* tooling -- no network-exposed dev server in this app, and the only fix is a breaking downgrade to drizzle-kit@0.18.1 with no newer upstream fix available. Accepted risk.",
+      "context": {
+        "title": "esbuild: esbuild enables any website to send any requests to the development server and read the response",
+        "file": "esbuild"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:35f8fb8731ff36ec6b94b655fc1048cb",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-29T00:47:42.801Z",
+      "reason": "Verified harmless: dangling commit objects are trivial in size (~1.6MB across 9 objects so far) and self-clean via git's default gc.auto/gc.pruneExpire maintenance. No cleanup needed.",
+      "context": {
+        "title": "Pre‑commit creates dangling Git objects without cleanup",
+        "file": ".husky/pre-commit"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:d59079d40c4ef824bcb6d6db9694ee7d",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-29T00:51:45.207Z",
+      "reason": "Intended design: dismissals require an explicit, human-directed flaught dismiss call (see CLAUDE.md/pre-commit hook comments -- agents don't self-dismiss). Enabling the store doesn't auto-suppress anything on its own.",
+      "context": {
+        "title": "Enabling dismissals in .advreview.yml changes review semantics",
+        "file": ".advreview.yml"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:ab7480703908845e2371a90c235ae735",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-29T02:26:25.119Z",
+      "reason": "Same tradeoff already dismissed for the original dismissal-store-coupling finding: intentional, documented design -- CI and the local gate need shared dismissal state (see .gitignore comment, CLAUDE.md).",
+      "context": {
+        "title": "Tracking review dismissals in source control couples review state to codebase",
+        "file": ".flaught-dismissals.json"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:158c8c825585b1fb8db21ce318731e65",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-29T02:26:25.404Z",
+      "reason": "No test suite exists yet in this project by design (CLAUDE.md) -- tester subagent's work is tracked separately in beads, not blocking a devDependency version bump.",
+      "context": {
+        "title": "No tests added to verify compatibility with @flaught/core@0.9.0",
+        "file": "package.json"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:8f56a0328acc8b8f7fe88e6bb2a5b193",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-29T02:26:25.700Z",
+      "reason": "Low confidence (33%), stylistic opinion about comment length in a prompt-instruction file, not a code defect.",
+      "context": {
+        "title": "Redundant documentation added in .flaught-prompt/system-append.md",
+        "file": ".flaught-prompt/system-append.md"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:af674c55cdaabf51ac12a1632915f1e4",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-29T02:31:19.237Z",
+      "reason": "Not new exposure: this repo's git history already records the same email in every commit's author/committer fields (an unavoidable, standard git mechanism). The dismissal store doesn't expose anything beyond what git itself already does on every commit.",
+      "context": {
+        "title": "Dismissal store contains personal email addresses and internal rationale",
+        "file": ".flaught-dismissals.json"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:8f6730d616731a4bf35005e979658105",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-29T02:33:01.229Z",
+      "reason": "Restates the already-dismissed esbuild/drizzle-kit CVE chain (see D-0001..D-0004 in this same artifact) as a single summary finding. Same accepted risk, not a new issue.",
+      "context": {
+        "title": "Known vulnerable transitive dependencies remain unaddressed",
+        "file": "package.json"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:3b285b3b80948644a47d19fc3da8bef6",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-29T02:33:01.525Z",
+      "reason": "Same dismissal-store-coupling tradeoff already dismissed: intentional, documented design (CI and local gate need shared dismissal state).",
+      "context": {
+        "title": "Coupling review dismissal state to source control introduces merge conflicts",
+        "file": ".flaught-dismissals.json"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:a8e5f421957a6cff103d46f0a380af9e",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-29T02:33:01.817Z",
+      "reason": "Same LLM-code-exposure tradeoff already dismissed (code owner accepts sending staged code to Groq). GROQ_API_KEY being unset is itself the opt-out -- --no-llm path in .husky/pre-commit.",
+      "context": {
+        "title": "Pre‑commit hook now depends on external LLM API without explicit opt‑out",
+        "file": ".github/workflows/ci.yml"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:4deb7a77a8764da8da9fe290b43cd2fa",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-29T02:33:02.111Z",
+      "reason": "Low confidence (35%), same dismissal-store-size tradeoff already dismissed elsewhere in this session.",
+      "context": {
+        "title": "Large dismissal store JSON adds repository bloat and future merge friction",
+        "file": ".flaught-dismissals.json"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:a21152d406d7c1a099198611330404f0",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-29T02:34:15.827Z",
+      "reason": "Same no-test-suite tradeoff already dismissed: no test suite exists yet in this project by design (CLAUDE.md), tester subagent's work is separate future beads work.",
+      "context": {
+        "title": "Version bump of @flaught/core without regression tests",
+        "file": "package.json"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:d3cb8991e9d7de94a846e4028607bcae",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-29T02:34:16.118Z",
+      "reason": "Low confidence (39%). system-append.md is referenced by Flaught's own prompt-loading mechanism implicitly (docs/prompt-templates.md), not meant to be referenced elsewhere in the codebase.",
+      "context": {
+        "title": "Unreferenced documentation file added",
+        "file": ".flaught-prompt/system-append.md"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:fa4f4200e231290f6a7b61983789e686",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-29T02:50:01.078Z",
+      "reason": "File is 6.3KB. 'Large' is a mischaracterization at this size; not a real payload concern.",
+      "context": {
+        "title": "Large monolithic CSS increases payload size and load time",
+        "file": "public/styles.css"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:71d41c659785e13d87d7e54b3809f0d4",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-29T02:50:01.381Z",
+      "reason": "File has clear section comments (Reset, Typography, Layout primitives, Forms, Status messages, Tables) despite the finding's premise that it lacks organization. One file is a reasonable choice at this size; not a real maintenance risk yet.",
+      "context": {
+        "title": "Monolithic stylesheet hampers future maintenance and scalability",
+        "file": "public/styles.css"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:88224599da3f6c1cd4548afdae1637aa",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-29T02:50:01.682Z",
+      "reason": "Design direction is explicitly in scope -- it's bd issue tktk-lfc.7, part of the planned Sprint 1 work, not an unplanned addition.",
+      "context": {
+        "title": "Design language addition may be scope‑creep beyond the class‑roster MVP",
+        "file": "CLAUDE.md"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:3bdd823d58f2109df091099e9cd7db62",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-29T02:50:01.975Z",
+      "reason": "ViewAsToggle/PromptRunner are prototype/ components, not part of this diff or this commit at all -- prototype/ is supposed to be excluded from review context per .advreview.yml. Appears to be a context leak/hallucination, not a real finding about this change.",
+      "context": {
+        "title": "No tests added for new UI features (Viewing‑as toggle, PromptRunner, etc.)",
+        "file": ".beads/interactions.jsonl"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:1ea50abeafffc8de39cb74b48f910bf5",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-30T12:03:39.373Z",
+      "reason": "Real, pre-existing gap (this commit didn't introduce it) -- already documented transparently as an open, unresolved decision in docs/deployment.md 'Known gap' and CLAUDE.md/kickoff brief §9.1. This is a docs-only commit; resolving the actual isolation strategy is separate, tracked work, not something to silently fix here.",
+      "context": {
+        "title": "Preview deployments share production D1 database, risking data exposure",
+        "file": "docs/deployment.md"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:634a72b4ce3ce7332b8b499ac2ce876a",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-30T12:14:49.025Z",
+      "reason": "The doc itself already addresses this: says explicitly 'Working doc, updated as issues close' and names bd show tktk-lfc as the actual source of truth. Staleness risk is acknowledged by design, not hidden.",
+      "context": {
+        "title": "Roadmap may become stale, leading to misinformation",
+        "file": "docs/roadmap.md"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:1664111e452d843ac9afb9a2e130d384",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-30T12:14:49.371Z",
+      "reason": "Speculative (35% confidence). A single low-churn markdown file, no more merge-conflict-prone than any other doc in this repo.",
+      "context": {
+        "title": "Potential merge conflicts on shared roadmap document",
+        "file": "docs/roadmap.md"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:b4a75830213548dff100d66f63f3c501",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-30T12:14:49.673Z",
+      "reason": "Low confidence (10%). 'bd show tktk-lfc' is a public dev-tooling command, not sensitive -- already referenced in README.md and CLAUDE.md.",
+      "context": {
+        "title": "Exposure of internal tooling command in documentation",
+        "file": "docs/roadmap.md"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:c555afef13d1c9c72b6d64c7923a2094",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-30T12:25:16.234Z",
+      "reason": "Not new to this route -- every POST route in the app relies on the same mitigation: session cookies are SameSite=Lax (src/lib/session.ts), which blocks the cookie on cross-site POST. No CSRF-specific finding was raised for the other POST routes (signup, login, create class, invite) built earlier this session; this is non-deterministic LLM attention landing on this route this time, not a gap specific to it.",
+      "context": {
+        "title": "Missing CSRF protection on POST /classes/:id/teachers",
+        "file": "src/index.tsx"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:e93f7be8c2a1aa090d1aebb62298b805",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-30T12:25:16.526Z",
+      "reason": "Deliberate, reasoned tradeoff from the task spec, not an oversight: this route is gated behind requireTeacher + class membership, so it's only reachable by other authenticated, already-trusted teachers (workshop colleagues), not anonymous users -- a materially different threat model than login's enumeration concern. A teacher filling this form needs to know whether they mistyped the email or it genuinely isn't registered.",
+      "context": {
+        "title": "Teacher email enumeration via detailed error messages",
+        "file": "src/lib/classes.ts"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:6dd230420d4daddf633e451ed3ce085e",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-30T12:25:16.817Z",
+      "reason": "Two small, semantically-distinct forms (invite a student vs. add a co-teacher) sharing a similar shape. Extracting a component for this now is premature abstraction for the size of the duplication -- revisit if a third similar form appears.",
+      "context": {
+        "title": "Duplicate teacher‑addition UI logic in ClassDetailPage",
+        "file": "src/views/Classes.tsx"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:02a26654ca81e90e3909bb5259f0c0a3",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-30T12:26:48.997Z",
+      "reason": "No rate limiting exists on ANY route in this app (signup, login, create class, invite) -- not specific to this endpoint. Out of scope for this MVP pass; would need dedicated infra (Cloudflare rate limiting rules or a KV counter).",
+      "context": {
+        "title": "No rate limiting on co‑teacher addition endpoint enables enumeration/brute‑force",
+        "file": "src/index.tsx"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:85f06372a8a89861c8ea577e2ae7ec91",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-30T12:26:49.290Z",
+      "reason": "Consistent with the existing pattern across the whole codebase -- signupTeacher (auth.ts) and createInvite (invites.ts) both only check non-empty, relying on the HTML type=email input for format validation, not a server-side regex. Not a gap specific to this commit.",
+      "context": {
+        "title": "Server‑side email format validation missing for co‑teacher addition",
+        "file": "src/lib/classes.ts"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:37242200f6cebf0a5ad01ca9fbeb9bbd",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-30T12:26:49.578Z",
+      "reason": "No audit logging exists anywhere in this app yet -- no logging/observability infrastructure has been decided at all. Out of scope for this MVP pass.",
+      "context": {
+        "title": "Missing audit logging for co‑teacher addition",
+        "file": "src/lib/classes.ts"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:339f88e423a8d7597a19f3707e781f10",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-30T12:26:49.868Z",
+      "reason": "No test suite exists yet in this project by design (CLAUDE.md) -- tester subagent's work is separate future work, not blocking individual feature commits.",
+      "context": {
+        "title": "No automated tests for addCoTeacher logic and error branches",
+        "file": "src/lib/classes.ts"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:48041ee7d259ab0633007541687e9bf7",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-30T12:26:50.160Z",
+      "reason": "Low confidence (10%), and the premise is wrong: ClassDetailPage renders both the teachers list and pending-invites list together on one page, so pendingInvites must be re-fetched regardless of which form was submitted or the invites section would render stale/empty.",
+      "context": {
+        "title": "Unnecessary pending‑invites fetch after adding a co‑teacher",
+        "file": "src/index.tsx"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:2d272afd841ec5ab84c7011ed40b457b",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-30T13:12:09.538Z",
+      "reason": "Very low confidence (10%) and directly contradicted by evidence: npm run typecheck (tsc --noEmit) ran clean both before and after this fix, across the whole codebase. No type mismatch exists.",
+      "context": {
+        "title": "TypeScript type mismatch after removing username column",
+        "file": "src/lib/classes.ts"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:469aafc8961c168311cf9af4f99f5dd1",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-30T13:12:09.830Z",
+      "reason": "Not new -- already documented as a known, accepted gap in invites.ts's own module comment and CLAUDE.md since tktk-lfc.4: an invite that expires/is revoked without being accepted leaves its placeholder rows behind, inert but not displayed anywhere. Unrelated to this commit's username removal.",
+      "context": {
+        "title": "Orphaned placeholder user rows persist after invite expiry",
+        "file": "src/lib/invites.ts"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:a87509e9aebcec4e10d5e35460a0dfc3",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-30T13:21:35.273Z",
+      "reason": "Not special-cased differently from every other DB call in this codebase -- nothing anywhere blanket-catches generic D1 infra failures (createClass's db.batch(), listClassesForTeacher, etc. all have the same unhandled-exception exposure). Hono's jsonError middleware already contains an uncaught exception to a generic 500, not a process crash. Adding defensive infra-failure handling here specifically, inconsistent with the rest of the codebase, is scope beyond this fix.",
+      "context": {
+        "title": "Unhandled database errors in sessionUserExists",
+        "file": "src/lib/authGuard.ts"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:45606eaf415dba66be79c984c027e401",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-30T13:21:35.707Z",
+      "reason": "Restates the already-dismissed esbuild/drizzle-kit CVE chain (see D-0001..D-0004 in this same artifact), unrelated to this commit's actual changes.",
+      "context": {
+        "title": "Transitive vulnerable dependencies introduced via drizzle-kit",
+        "file": "src/lib/authGuard.ts"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:dd502f40177505d55ed7fe1feee3b15c",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-30T13:21:36.076Z",
+      "reason": "Deliberate, already-reasoned-about tradeoff, stated directly in the function's own comment and the commit message: one extra query at the single chokepoint every protected route already goes through, cheaper than defending every individual insert separately. Not an oversight.",
+      "context": {
+        "title": "Extra DB round‑trip on every protected route",
+        "file": "src/lib/authGuard.ts"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:571c9df818da68677e81303a1d47fbae",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-30T13:21:36.406Z",
+      "reason": "The coupling is deliberate and appropriately scoped -- goes through the sanctioned src/db.ts access point (getDb), not a new direct DB connection, per CLAUDE.md rule 1. The whole point of this fix is making the auth guard DB-aware; that's the fix, not an accident.",
+      "context": {
+        "title": "Auth guard tightly coupled to data layer",
+        "file": "src/lib/authGuard.ts"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:db3f983c808bc74fdbc271bf8f980fac",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-30T13:21:36.749Z",
+      "reason": "Descriptive, not a defect -- this is exactly the intended behavior change this commit makes, not a side effect.",
+      "context": {
+        "title": "Guard now enforces user existence beyond role check",
+        "file": "src/lib/authGuard.ts"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:2c6e71ffd825d6547648a6fbdf325a10",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-30T13:21:37.070Z",
+      "reason": "No test suite exists yet in this project by design (CLAUDE.md) -- tester subagent's work is separate future work.",
+      "context": {
+        "title": "No tests for new existence‑check behavior",
+        "file": "src/lib/authGuard.ts"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:54168a197f059c3e6573a6ab8890c0bf",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-30T13:22:42.398Z",
+      "reason": "Descriptive, not a defect -- restates the exact intended behavior change this commit makes (same as the earlier-dismissed 'Guard now enforces user existence beyond role check', just reworded).",
+      "context": {
+        "title": "Guard now performs user existence validation and cookie clearing",
+        "file": "src/lib/authGuard.ts"
+      },
+      "expires_at": null
+    }
+  ]
+}

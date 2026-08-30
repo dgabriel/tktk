@@ -1,0 +1,37 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "tktk",
+  "main": "src/index.tsx",
+  "compatibility_date": "2026-08-01",
+  "compatibility_flags": ["nodejs_compat"],
+
+  // Placeholder — not a real database yet. Run `npx wrangler d1 create tktk`
+  // (requires `wrangler login` against your Cloudflare account first) and
+  // replace `database_id` below with the id it prints. Local dev works
+  // against this placeholder via `wrangler dev --local` regardless, since
+  // `--local` emulates D1 with no real Cloudflare resource required.
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "tktk",
+      "database_id": "REPLACE_WITH_REAL_D1_DATABASE_ID",
+      "migrations_dir": "drizzle"
+    }
+  ],
+
+  // No persistent staging environment (CLAUDE.md rule 4) — prod + PR preview
+  // deployments only. Preview-deployment D1 binding strategy is still an
+  // open decision (kickoff brief §9.1); don't add an `[env.preview]` block
+  // here until that's settled with real Cloudflare account access.
+
+  // Static files (styles.css for now) served directly by Cloudflare, no
+  // Worker route needed — matches "no client build step, no bundler-managed
+  // frontend app" (kickoff brief §6).
+  "assets": {
+    "directory": "./public"
+  },
+
+  "observability": {
+    "enabled": true
+  }
+}
