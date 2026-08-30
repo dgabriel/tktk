@@ -1,5 +1,5 @@
 // Class list + class detail pages. The create-class/add-co-teacher/
-// invite-students forms are plain server-rendered forms (no hx-* attributes
+// invite-students/add-session forms are plain server-rendered forms (no hx-* attributes
 // on the form/submit itself) -- same reasoning as Auth.tsx: full browser
 // POST/redirect is the simplest correct thing here, and none of those routes
 // are hit via hx-push-url, so CLAUDE.md rule 3a's HX-Request branching
@@ -15,6 +15,7 @@ import type { FC } from "hono/jsx";
 import { Layout } from "./Layout";
 import type { ClassDetail, ClassListItem } from "../lib/classes";
 import type { PendingInvite } from "../lib/invites";
+import type { ClassSessionItem } from "../lib/sessions";
 
 // Parses as UTC midnight and formats in UTC -- avoids an off-by-one-day
 // shift a local-timezone parse/format could introduce for a value that's
@@ -168,6 +169,9 @@ export const InviteEmailsField: FC<{ classId: string; value: string; foundCount?
   </div>
 );
 
+export type SessionFormErrors = { date?: string };
+export type SessionFormValues = { date?: string; title?: string };
+
 export const ClassDetailPage: FC<{
   classDetail: ClassDetail;
   loggedInAs: string;
@@ -178,6 +182,10 @@ export const ClassDetailPage: FC<{
   teacherError?: string;
   teacherSuccess?: string;
   teacherValues?: TeacherFormValues;
+  sessions?: ClassSessionItem[];
+  sessionError?: string;
+  sessionSuccess?: string;
+  sessionValues?: SessionFormValues;
 }> = ({
   classDetail,
   loggedInAs,
@@ -188,6 +196,10 @@ export const ClassDetailPage: FC<{
   teacherError,
   teacherSuccess,
   teacherValues = {},
+  sessions = [],
+  sessionError,
+  sessionSuccess,
+  sessionValues = {},
 }) => (
   <Layout title={classDetail.name} loggedInAs={loggedInAs}>
     <main class="container stack">
@@ -200,6 +212,59 @@ export const ClassDetailPage: FC<{
         <p class="text-muted">{formatDateRange(classDetail.startDate, classDetail.endDate)}</p>
       )}
       {classDetail.description && <p>{classDetail.description}</p>}
+
+      <div class="panel stack">
+        <h2>Sessions</h2>
+        {sessions.length === 0 ? (
+          <p class="text-muted">No sessions scheduled yet.</p>
+        ) : (
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Date</th>
+                <th>Title</th>
+              </tr>
+            </thead>
+            <tbody>
+              {sessions.map((session) => (
+                <tr>
+                  <td>{session.number}</td>
+                  <td>{session.date ? formatDate(session.date) : "—"}</td>
+                  <td>{session.title ?? "—"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+
+        <h3>Add a session</h3>
+        {sessionSuccess && <p class="message message-success">{sessionSuccess}</p>}
+        {sessionError && <p class="message message-error">{sessionError}</p>}
+        <form method="post" action={`/classes/${classDetail.id}/sessions`} class="stack">
+          <div class="field">
+            <label for="session-date">
+              Date <span class="text-muted">(optional)</span>
+            </label>
+            <input
+              type="date"
+              id="session-date"
+              name="date"
+              value={sessionValues.date ?? ""}
+              aria-invalid={sessionError ? "true" : undefined}
+            />
+          </div>
+          <div class="field">
+            <label for="session-title">
+              Title <span class="text-muted">(optional)</span>
+            </label>
+            <input type="text" id="session-title" name="title" value={sessionValues.title ?? ""} />
+          </div>
+          <button type="submit" class="btn">
+            Add session
+          </button>
+        </form>
+      </div>
 
       <div class="panel stack">
         <h2>Join code</h2>

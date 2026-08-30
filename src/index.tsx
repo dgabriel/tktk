@@ -29,6 +29,7 @@ import {
 } from "./lib/invites";
 import { joinClassAsExistingUser, joinClassWithSignup } from "./lib/join";
 import { sendInviteEmail } from "./lib/email";
+import { createSession, listSessionsForClass } from "./lib/sessions";
 
 const app = new Hono<{ Bindings: Env; Variables: Variables }>();
 
@@ -181,8 +182,11 @@ app.get("/classes/:id", requireTeacher, async (c) => {
   }
 
   const pendingInvites = await listPendingInvites(db, classDetail.id);
+  const sessions = await listSessionsForClass(db, classDetail.id);
 
-  return c.html(<ClassDetailPage classDetail={classDetail} loggedInAs={session.email} pendingInvites={pendingInvites} />);
+  return c.html(
+    <ClassDetailPage classDetail={classDetail} loggedInAs={session.email} pendingInvites={pendingInvites} sessions={sessions} />,
+  );
 });
 
 app.post("/classes/:id/teachers", requireTeacher, async (c) => {
@@ -204,6 +208,7 @@ app.post("/classes/:id/teachers", requireTeacher, async (c) => {
 
   const result = await addCoTeacher(db, { classId, email });
   const pendingInvites = await listPendingInvites(db, classId);
+  const sessions = await listSessionsForClass(db, classId);
 
   if (!result.ok) {
     return c.html(
@@ -211,6 +216,7 @@ app.post("/classes/:id/teachers", requireTeacher, async (c) => {
         classDetail={classDetail}
         loggedInAs={session.email}
         pendingInvites={pendingInvites}
+        sessions={sessions}
         teacherError={result.error}
         teacherValues={{ email }}
       />,
@@ -224,6 +230,7 @@ app.post("/classes/:id/teachers", requireTeacher, async (c) => {
       classDetail={updatedClassDetail ?? classDetail}
       loggedInAs={session.email}
       pendingInvites={pendingInvites}
+      sessions={sessions}
       teacherSuccess={`Added ${email} as a co-teacher.`}
     />,
   );
@@ -268,6 +275,7 @@ app.post("/classes/:id/invites", requireTeacher, async (c) => {
   const body = await c.req.parseBody();
   const raw = String(body.emails ?? "");
   const emails = extractEmails(raw);
+  const sessions = await listSessionsForClass(db, classId);
 
   if (emails.length === 0) {
     const pendingInvites = await listPendingInvites(db, classId);
@@ -276,6 +284,7 @@ app.post("/classes/:id/invites", requireTeacher, async (c) => {
         classDetail={classDetail}
         loggedInAs={session.email}
         pendingInvites={pendingInvites}
+        sessions={sessions}
         inviteError="Paste at least one valid email address."
         inviteValues={{ emails: raw }}
       />,
@@ -309,6 +318,7 @@ app.post("/classes/:id/invites", requireTeacher, async (c) => {
         classDetail={classDetail}
         loggedInAs={session.email}
         pendingInvites={pendingInvites}
+        sessions={sessions}
         inviteError={rejected.map((r) => `${r.email}: ${r.error}`).join(" ")}
         inviteValues={{ emails: raw }}
       />,
@@ -330,7 +340,55 @@ app.post("/classes/:id/invites", requireTeacher, async (c) => {
       classDetail={classDetail}
       loggedInAs={session.email}
       pendingInvites={pendingInvites}
+      sessions={sessions}
       inviteSuccess={inviteSuccess}
+    />,
+  );
+});
+
+// Plain form POST, same shape/reasoning as /classes/:id/teachers and
+// /classes/:id/invites above -- never reached via hx-push-url, so CLAUDE.md
+// rule 3a's HX-Request branching doesn't apply.
+app.post("/classes/:id/sessions", requireTeacher, async (c) => {
+  const session = c.get("session");
+  const db = getDb(c.env);
+  const classId = c.req.param("id");
+
+  const classDetail = await getClassDetailForTeacher(db, classId, session.userId);
+  if (!classDetail) {
+    return c.redirect("/classes", 303);
+  }
+
+  const body = await c.req.parseBody();
+  const date = String(body.date ?? "").trim();
+  const title = String(body.title ?? "").trim();
+
+  const result = await createSession(db, { classId, date: date || undefined, title: title || undefined });
+  const pendingInvites = await listPendingInvites(db, classId);
+
+  if (!result.ok) {
+    const sessions = await listSessionsForClass(db, classId);
+    return c.html(
+      <ClassDetailPage
+        classDetail={classDetail}
+        loggedInAs={session.email}
+        pendingInvites={pendingInvites}
+        sessions={sessions}
+        sessionError={result.errors.date}
+        sessionValues={{ date, title }}
+      />,
+      400,
+    );
+  }
+
+  const sessions = await listSessionsForClass(db, classId);
+  return c.html(
+    <ClassDetailPage
+      classDetail={classDetail}
+      loggedInAs={session.email}
+      pendingInvites={pendingInvites}
+      sessions={sessions}
+      sessionSuccess={`Added session ${sessions.find((s) => s.id === result.id)?.number ?? ""}.`}
     />,
   );
 });

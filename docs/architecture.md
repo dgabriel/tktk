@@ -64,6 +64,7 @@ erDiagram
     classes ||--o{ class_students : "has"
     classes ||--o{ invites : "has"
     users ||--o{ invites : "sent by"
+    classes ||--o{ class_sessions : "has"
 
     users {
         text id PK
@@ -98,6 +99,13 @@ erDiagram
         text token UK "enrollment link, NOT an auth token"
         text invitedBy FK
         text status "pending | accepted | expired | revoked"
+    }
+    class_sessions {
+        text id PK
+        text classId FK
+        int number "auto-assigned, MAX(number)+1 per class"
+        text date "optional, YYYY-MM-DD"
+        text title "optional"
     }
 ```
 

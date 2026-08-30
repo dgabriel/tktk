@@ -14,7 +14,7 @@
 // the sole identity/login field -- no separate `username`; a real display
 // name / profile concept is explicitly deferred, not designed yet.
 
-import { sqliteTable, text, primaryKey } from "drizzle-orm/sqlite-core";
+import { sqliteTable, text, integer, primaryKey, unique } from "drizzle-orm/sqlite-core";
 import { sql } from "drizzle-orm";
 
 const timestamp = (name: string) => text(name);
@@ -108,3 +108,30 @@ export const invites = sqliteTable("invites", {
   status: text("status").notNull(),
   createdAt: timestamp("created_at").notNull().default(nowDefault),
 });
+
+// Schedule-only: a numbered meeting within a class. Deliberately does NOT
+// carry any submitted content (poems/assignments/lessons) -- that's the
+// assignments/submissions territory CLAUDE.md defers for this milestone.
+// `number` is auto-assigned by createSession (src/lib/sessions.ts) as
+// MAX(number)+1 per class, not user-settable; the unique pair below plus a
+// bounded retry there is what keeps two teachers adding a session on the
+// same class at once (CLAUDE.md rule 5: multi-teacher is first-class) from
+// silently landing on the same number.
+export const classSessions = sqliteTable(
+  "class_sessions",
+  {
+    id: text("id").primaryKey(),
+    classId: text("class_id")
+      .notNull()
+      .references(() => classes.id),
+    number: integer("number").notNull(),
+    // Both optional -- a session can exist as a placeholder slot before its
+    // date/title are known. Plain text columns like classes.startDate/
+    // endDate, not the timestamp() helper -- these are calendar dates, not
+    // full timestamps.
+    date: text("date"),
+    title: text("title"),
+    createdAt: timestamp("created_at").notNull().default(nowDefault),
+  },
+  (table) => [unique().on(table.classId, table.number)],
+);
