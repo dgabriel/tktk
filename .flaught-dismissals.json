@@ -253,6 +253,39 @@
         "file": "docs/deployment.md"
       },
       "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:634a72b4ce3ce7332b8b499ac2ce876a",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-30T12:14:49.025Z",
+      "reason": "The doc itself already addresses this: says explicitly 'Working doc, updated as issues close' and names bd show tktk-lfc as the actual source of truth. Staleness risk is acknowledged by design, not hidden.",
+      "context": {
+        "title": "Roadmap may become stale, leading to misinformation",
+        "file": "docs/roadmap.md"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:1664111e452d843ac9afb9a2e130d384",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-30T12:14:49.371Z",
+      "reason": "Speculative (35% confidence). A single low-churn markdown file, no more merge-conflict-prone than any other doc in this repo.",
+      "context": {
+        "title": "Potential merge conflicts on shared roadmap document",
+        "file": "docs/roadmap.md"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:b4a75830213548dff100d66f63f3c501",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-30T12:14:49.673Z",
+      "reason": "Low confidence (10%). 'bd show tktk-lfc' is a public dev-tooling command, not sensitive -- already referenced in README.md and CLAUDE.md.",
+      "context": {
+        "title": "Exposure of internal tooling command in documentation",
+        "file": "docs/roadmap.md"
+      },
+      "expires_at": null
     }
   ]
 }
