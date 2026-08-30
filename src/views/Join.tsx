@@ -11,7 +11,7 @@ import type { FC } from "hono/jsx";
 import { Layout } from "./Layout";
 import type { JoinSignupFieldErrors } from "../lib/join";
 
-export type JoinSignupFormValues = { username?: string; email?: string };
+export type JoinSignupFormValues = { email?: string };
 
 export type JoinPageProps =
   | { mode: "member"; error?: string; joinCode?: string }
@@ -77,19 +77,6 @@ export const JoinPage: FC<JoinPageProps> = (props) => {
                 autocapitalize="characters"
                 value={joinCode}
               />
-            </div>
-            <div class="field">
-              <label for="username">Username</label>
-              <input
-                type="text"
-                id="username"
-                name="username"
-                required
-                autocomplete="username"
-                value={values.username ?? ""}
-                aria-invalid={errors.username ? "true" : undefined}
-              />
-              {errors.username && <p class="field-error">{errors.username}</p>}
             </div>
             <div class="field">
               <label for="email">Email</label>

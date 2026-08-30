@@ -67,10 +67,9 @@ erDiagram
 
     users {
         text id PK
-        text username UK "login identifier"
         text passwordHash "PBKDF2, never magic-link"
-        text email UK "contact/invite-matching, not login"
-        text name
+        text email UK "login identifier AND contact/invite-matching"
+        text name "optional, deferred profile concept"
         text role "teacher | student"
     }
     classes {
@@ -119,9 +118,9 @@ sequenceDiagram
 
     rect rgb(30, 40, 50)
     Note over B,D: Signup (teacher self-registration only)
-    B->>W: POST /auth/signup {username, email, password}
+    B->>W: POST /auth/signup {email, password}
     W->>A: signupTeacher(db, input)
-    A->>D: check username/email uniqueness
+    A->>D: check email uniqueness
     A->>P: hashPassword(password)
     P-->>A: PBKDF2 hash (210k iterations)
     A->>D: INSERT users (role: teacher)
@@ -132,19 +131,19 @@ sequenceDiagram
 
     rect rgb(30, 40, 50)
     Note over B,D: Login
-    B->>W: POST /auth/login {username, password}
+    B->>W: POST /auth/login {email, password}
     W->>A: verifyLogin(db, input)
-    A->>D: find user by username
+    A->>D: find user by email
     alt user not found
         A->>P: verifyPassword(password, DUMMY_HASH)
-        Note right of A: still runs a full PBKDF2 derivation --<br/>closes a timing side-channel that would<br/>otherwise let response time alone reveal<br/>whether the username exists
+        Note right of A: still runs a full PBKDF2 derivation --<br/>closes a timing side-channel that would<br/>otherwise let response time alone reveal<br/>whether the email exists
     else user found
         A->>P: verifyPassword(password, user.passwordHash)
     end
     P-->>A: true/false
     alt invalid
         A-->>W: null
-        W-->>B: 400, "Invalid username or password."\n(identical message either way)
+        W-->>B: 400, "Invalid email or password."\n(identical message either way)
     else valid
         A-->>W: {id, email, role}
         W->>S: createSessionCookie(...)
@@ -179,8 +178,8 @@ flowchart TD
     Check3 -->|no| S5["409: log in instead"]
     Lookup -->|valid, pending| Form(["Signup form\n(email locked, not editable\nor even submitted)"])
 
-    Form --> Submit["POST /invites/:token\n{username, password, name}"]
-    Submit --> Accept["acceptInvite():\nUPDATE the placeholder row\nin place (same id) with real\nusername/password/email"]
+    Form --> Submit["POST /invites/:token\n{password, name}"]
+    Submit --> Accept["acceptInvite():\nUPDATE the placeholder row\nin place (same id) with real\npassword/email"]
     Accept --> Finish(["Session created,\nredirect home"])
     AutoAttach --> Finish
 ```

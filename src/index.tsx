@@ -81,16 +81,15 @@ app.get("/auth/signup", (c) => c.html(<SignupPage />));
 
 app.post("/auth/signup", async (c) => {
   const body = await c.req.parseBody();
-  const username = String(body.username ?? "").trim();
   const email = String(body.email ?? "").trim();
   const name = String(body.name ?? "").trim();
   const password = String(body.password ?? "");
 
   const db = getDb(c.env);
-  const result = await signupTeacher(db, { username, email, name: name || undefined, password });
+  const result = await signupTeacher(db, { email, name: name || undefined, password });
 
   if (!result.ok) {
-    return c.html(<SignupPage errors={result.errors} values={{ username, email, name }} />, 400);
+    return c.html(<SignupPage errors={result.errors} values={{ email, name }} />, 400);
   }
 
   await createSessionCookie(c, c.env.SESSION_SECRET, {
@@ -104,16 +103,16 @@ app.post("/auth/signup", async (c) => {
 
 app.post("/auth/login", async (c) => {
   const body = await c.req.parseBody();
-  const username = String(body.username ?? "").trim();
+  const email = String(body.email ?? "").trim();
   const password = String(body.password ?? "");
 
   const db = getDb(c.env);
-  const user = await verifyLogin(db, { username, password });
+  const user = await verifyLogin(db, { email, password });
 
   if (!user) {
-    // Generic message -- do not reveal whether the username exists or the
-    // password was wrong (avoids username enumeration).
-    return c.html(<LoginPage error="Invalid username or password." username={username} />, 400);
+    // Generic message -- do not reveal whether the email exists or the
+    // password was wrong (avoids email enumeration).
+    return c.html(<LoginPage error="Invalid email or password." email={email} />, 400);
   }
 
   await createSessionCookie(c, c.env.SESSION_SECRET, {
@@ -338,11 +337,10 @@ app.post("/invites/:token", async (c) => {
   const db = getDb(c.env);
   const token = c.req.param("token");
   const body = await c.req.parseBody();
-  const username = String(body.username ?? "").trim();
   const name = String(body.name ?? "").trim();
   const password = String(body.password ?? "");
 
-  const result = await acceptInvite(db, { token, username, password, name: name || undefined });
+  const result = await acceptInvite(db, { token, password, name: name || undefined });
 
   if (!result.ok) {
     if (result.status === "validation") {
@@ -354,7 +352,7 @@ app.post("/invites/:token", async (c) => {
             email={lookup.invite.email}
             className={lookup.invite.className}
             errors={result.errors}
-            values={{ username, name }}
+            values={{ name }}
           />,
           400,
         );
@@ -420,33 +418,32 @@ app.post("/join", async (c) => {
     return c.redirect("/", 303);
   }
 
-  const username = String(body.username ?? "").trim();
   const email = String(body.email ?? "").trim();
   const password = String(body.password ?? "");
 
-  const result = await joinClassWithSignup(db, { joinCode, username, email, password });
+  const result = await joinClassWithSignup(db, { joinCode, email, password });
 
   if (!result.ok) {
     if (result.status === "invalid_code") {
       return c.html(
-        <JoinPage mode="signup" error="That join code isn't valid." joinCode={joinCode} values={{ username, email }} />,
+        <JoinPage mode="signup" error="That join code isn't valid." joinCode={joinCode} values={{ email }} />,
         404,
       );
     }
     if (result.status === "validation") {
       return c.html(
-        <JoinPage mode="signup" joinCode={joinCode} errors={result.errors} values={{ username, email }} />,
+        <JoinPage mode="signup" joinCode={joinCode} errors={result.errors} values={{ email }} />,
         400,
       );
     }
-    // conflict: a concurrent request took the same username/email between
-    // this request's pre-check and its insert.
+    // conflict: a concurrent request took the same email between this
+    // request's pre-check and its insert.
     return c.html(
       <JoinPage
         mode="signup"
-        error="That username or email was just taken. Try again."
+        error="That email was just taken. Try again."
         joinCode={joinCode}
-        values={{ username, email }}
+        values={{ email }}
       />,
       409,
     );

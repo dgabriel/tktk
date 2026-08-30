@@ -16,14 +16,14 @@
 //   - reuses the invite's own id as its id (so acceptInvite can find it
 //     later with no extra lookup/column -- it already has invite.id in
 //     hand from the token lookup)
-//   - gets an unusable username/passwordHash (satisfies NOT NULL, never
-//     logs in) and a `*.invalid` email (RFC 2606-reserved, so it can never
-//     collide with a real signup and, just as importantly, never makes
+//   - gets an unusable passwordHash (satisfies NOT NULL, never logs in) and
+//     a `*.invalid` email (RFC 2606-reserved, so it can never collide with a
+//     real signup and, just as importantly, never makes
 //     getInviteForAcceptance's "does a real user already have this email"
 //     check trip over its own placeholder)
 // acceptInvite then UPDATEs that same row in place (id unchanged) with the
-// real username/password/email chosen at signup, rather than inserting a
-// second row. attachInviteToExistingUser (the already-has-an-account path)
+// real password/email chosen at signup, rather than inserting a second row.
+// attachInviteToExistingUser (the already-has-an-account path)
 // repoints class_students at the real user and deletes the now-unreferenced
 // placeholder.
 //
@@ -37,7 +37,7 @@ import { eq, and } from "drizzle-orm";
 import type { Db } from "../db";
 import { invites, classStudents, classes, users } from "../db/schema";
 import { hashPassword } from "./password";
-import { MIN_PASSWORD_LENGTH } from "./auth";
+import { MIN_PASSWORD_LENGTH, normalizeEmail } from "./auth";
 import type { SignupFieldErrors } from "./auth";
 
 const INVITE_EXPIRY_MS = 7 * 24 * 60 * 60 * 1000; // 7 days, per CLAUDE.md
@@ -56,10 +56,6 @@ function isUniqueConstraintError(err: unknown): boolean {
   return err instanceof Error && /unique constraint/i.test(err.message);
 }
 
-function placeholderUsername(id: string): string {
-  return `invite-pending-${id}`;
-}
-
 function placeholderEmail(id: string): string {
   return `invite-pending-${id}@${PLACEHOLDER_EMAIL_DOMAIN}`;
 }
@@ -71,7 +67,7 @@ export type CreateInviteInput = { classId: string; email: string; invitedBy: str
 export type CreateInviteResult = { ok: true; token: string } | { ok: false; error: string };
 
 export async function createInvite(db: Db, input: CreateInviteInput): Promise<CreateInviteResult> {
-  const email = input.email.trim();
+  const email = normalizeEmail(input.email);
   if (!email) return { ok: false, error: "Email is required." };
 
   // Not specified in the kickoff brief -- conservative default (documented
@@ -122,7 +118,6 @@ export async function createInvite(db: Db, input: CreateInviteInput): Promise<Cr
     // commit. See module-level note.
     db.insert(users).values({
       id,
-      username: placeholderUsername(id),
       passwordHash: placeholderPasswordHash,
       email: placeholderEmail(id),
       name: null,
@@ -232,7 +227,7 @@ export async function attachInviteToExistingUser(
 // ---------------------------------------------------------------------------
 // Completing signup from the acceptance form
 
-export type AcceptInviteInput = { token: string; username: string; password: string; name?: string };
+export type AcceptInviteInput = { token: string; password: string; name?: string };
 
 export type AcceptInviteResult =
   | { ok: true; user: { id: string; email: string } }
@@ -251,15 +246,8 @@ export async function acceptInvite(db: Db, input: AcceptInviteInput): Promise<Ac
   const invite = lookup.invite;
   const errors: SignupFieldErrors = {};
 
-  const username = input.username.trim();
-  if (!username) errors.username = "Username is required.";
   if (!input.password || input.password.length < MIN_PASSWORD_LENGTH) {
     errors.password = `Password must be at least ${MIN_PASSWORD_LENGTH} characters.`;
-  }
-
-  if (Object.keys(errors).length === 0) {
-    const existingUsername = await db.query.users.findFirst({ where: eq(users.username, username) });
-    if (existingUsername) errors.username = "That username is already taken.";
   }
 
   if (Object.keys(errors).length > 0) return { ok: false, status: "validation", errors };
@@ -270,10 +258,12 @@ export async function acceptInvite(db: Db, input: AcceptInviteInput): Promise<Ac
     await db.batch([
       // Converts the placeholder row created at invite time (same id --
       // see module-level note) into the real student account in place,
-      // rather than inserting a second row.
+      // rather than inserting a second row. invite.email is already
+      // guaranteed non-colliding (getInviteForAcceptance's existing_account
+      // check above), so no email uniqueness check is needed here.
       db
         .update(users)
-        .set({ username, passwordHash, email: invite.email, name: input.name?.trim() || null })
+        .set({ passwordHash, email: invite.email, name: input.name?.trim() || null })
         .where(eq(users.id, invite.id)),
       db.update(invites).set({ status: "accepted" }).where(eq(invites.id, invite.id)),
       db
@@ -282,10 +272,11 @@ export async function acceptInvite(db: Db, input: AcceptInviteInput): Promise<Ac
         .where(and(eq(classStudents.classId, invite.classId), eq(classStudents.userId, invite.id))),
     ]);
   } catch (err) {
-    // Concurrent accept of the same invite (double-submit, two tabs) racing
-    // past the "valid" check above -- e.g. both picked a username that's
-    // unique against the pre-check but collides with each other. Surface as
-    // a distinct, non-crashing state rather than a 500.
+    // Concurrent accept of the same invite (double-submit, two tabs), or a
+    // new account taking invite.email in the gap between
+    // getInviteForAcceptance's existing_account check above and this update
+    // -- either way the users.email unique constraint catches it. Surface
+    // as a distinct, non-crashing state rather than a 500.
     if (isUniqueConstraintError(err)) return { ok: false, status: "conflict" };
     throw err;
   }

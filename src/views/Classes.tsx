@@ -144,7 +144,7 @@ export const ClassDetailPage: FC<{
           <tbody>
             {classDetail.teachers.map((teacher) => (
               <tr>
-                <td>{teacher.name || teacher.username}</td>
+                <td>{teacher.name || teacher.email}</td>
                 <td>{teacher.email}</td>
                 <td>{teacher.role}</td>
               </tr>
@@ -188,14 +188,14 @@ export const ClassDetailPage: FC<{
             <tbody>
               {classDetail.students.map((student) => (
                 <tr>
-                  <td>{student.name || student.username}</td>
+                  <td>{student.name || student.email}</td>
                   <td>{student.email}</td>
                   <td>
                     <button
                       type="button"
                       class="btn-secondary"
                       hx-delete={`/classes/${classDetail.id}/students/${student.userId}`}
-                      hx-confirm={`Remove ${student.name || student.username} from this class?`}
+                      hx-confirm={`Remove ${student.name || student.email} from this class?`}
                       hx-target="closest tr"
                       hx-swap="delete"
                     >

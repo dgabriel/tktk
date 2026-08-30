@@ -7,10 +7,12 @@
 // column in Postgres is a drop-in swap rather than a format migration).
 //
 // Tables match kickoff brief §3 (users, classes, class_teachers,
-// class_students, invites), adjusted for username+password auth (CLAUDE.md
+// class_students, invites), adjusted for email+password auth (CLAUDE.md
 // "Decisions made during scaffolding" supersedes brief §4's magic-link
-// design — the `users.username`/`passwordHash` columns and the removal of
-// `login_tokens` are the schema-level trace of that decision).
+// design — the `users.email`/`passwordHash` columns and the removal of
+// `login_tokens` are the schema-level trace of that decision). `email` is
+// the sole identity/login field -- no separate `username`; a real display
+// name / profile concept is explicitly deferred, not designed yet.
 
 import { sqliteTable, text, primaryKey } from "drizzle-orm/sqlite-core";
 import { sql } from "drizzle-orm";
@@ -20,9 +22,9 @@ const nowDefault = sql`(current_timestamp)`;
 
 export const users = sqliteTable("users", {
   id: text("id").primaryKey(),
-  // Login identifier. Not the invite/contact channel -- that's `email`.
-  username: text("username").notNull().unique(),
   passwordHash: text("password_hash").notNull(),
+  // The login identifier as well as the invite/contact channel -- no
+  // separate username. Display name / profile fields are deferred.
   email: text("email").notNull().unique(),
   name: text("name"),
   // 'teacher' | 'student' — set at creation, not changed. See CLAUDE.md /
@@ -80,8 +82,8 @@ export const classStudents = sqliteTable(
 );
 
 // `token` is now an invite/enrollment code, not an auth token: the emailed
-// link takes the invited student to a signup form (choose username +
-// password, pre-filled email) rather than auto-authenticating them. Resend
+// link takes the invited student to a signup form (choose a password, the
+// invited email is locked in) rather than auto-authenticating them. Resend
 // is still used here for invite delivery -- only login/signup stopped being
 // email-token-based, not invitations.
 export const invites = sqliteTable("invites", {

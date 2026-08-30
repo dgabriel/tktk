@@ -5,6 +5,7 @@
 import { eq, and } from "drizzle-orm";
 import type { Db } from "../db";
 import { classes, classTeachers, classStudents, invites, users } from "../db/schema";
+import { normalizeEmail } from "./auth";
 
 // Human-typeable join code: uppercase letters + digits, excluding visually
 // ambiguous characters (0/O, 1/I) per kickoff brief §3.
@@ -114,14 +115,12 @@ export type ClassDetail = {
   teachers: Array<{
     userId: string;
     name: string | null;
-    username: string;
     email: string;
     role: string;
   }>;
   students: Array<{
     userId: string;
     name: string | null;
-    username: string;
     email: string;
   }>;
 };
@@ -147,7 +146,6 @@ export async function getClassDetailForTeacher(
     .select({
       userId: users.id,
       name: users.name,
-      username: users.username,
       email: users.email,
       role: classTeachers.role,
     })
@@ -161,7 +159,6 @@ export async function getClassDetailForTeacher(
     .select({
       userId: users.id,
       name: users.name,
-      username: users.username,
       email: users.email,
     })
     .from(classStudents)
@@ -190,7 +187,7 @@ export type AddCoTeacherResult = { ok: true } | { ok: false; error: string };
 // responsible for the class-membership check via getClassDetailForTeacher,
 // same as the existing /invites route.
 export async function addCoTeacher(db: Db, input: { classId: string; email: string }): Promise<AddCoTeacherResult> {
-  const email = input.email.trim();
+  const email = normalizeEmail(input.email);
   if (!email) return { ok: false, error: "Email is required." };
 
   const candidate = await db.query.users.findFirst({ where: eq(users.email, email) });

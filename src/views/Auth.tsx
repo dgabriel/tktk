@@ -6,7 +6,7 @@
 import type { FC } from "hono/jsx";
 import { Layout } from "./Layout";
 
-export const LoginPage: FC<{ error?: string; username?: string }> = ({ error, username }) => (
+export const LoginPage: FC<{ error?: string; email?: string }> = ({ error, email }) => (
   <Layout title="Log in">
     <main class="container-narrow">
       <div class="panel stack">
@@ -14,15 +14,8 @@ export const LoginPage: FC<{ error?: string; username?: string }> = ({ error, us
         {error && <p class="message message-error">{error}</p>}
         <form method="post" action="/auth/login" class="stack">
           <div class="field">
-            <label for="username">Username</label>
-            <input
-              type="text"
-              id="username"
-              name="username"
-              required
-              autocomplete="username"
-              value={username ?? ""}
-            />
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" required autocomplete="email" value={email ?? ""} />
           </div>
           <div class="field">
             <label for="password">Password</label>
@@ -40,11 +33,11 @@ export const LoginPage: FC<{ error?: string; username?: string }> = ({ error, us
   </Layout>
 );
 
-export type SignupFieldErrors = Partial<Record<"username" | "email" | "password", string>>;
+export type SignupFieldErrors = Partial<Record<"email" | "password", string>>;
 
 export const SignupPage: FC<{
   errors?: SignupFieldErrors;
-  values?: { username?: string; email?: string; name?: string };
+  values?: { email?: string; name?: string };
 }> = ({ errors = {}, values = {} }) => (
   <Layout title="Sign up">
     <main class="container-narrow">
@@ -54,19 +47,6 @@ export const SignupPage: FC<{
           Create a teacher account. Students join a class via an invite or join code, not this form.
         </p>
         <form method="post" action="/auth/signup" class="stack">
-          <div class="field">
-            <label for="username">Username</label>
-            <input
-              type="text"
-              id="username"
-              name="username"
-              required
-              autocomplete="username"
-              value={values.username ?? ""}
-              aria-invalid={errors.username ? "true" : undefined}
-            />
-            {errors.username && <p class="field-error">{errors.username}</p>}
-          </div>
           <div class="field">
             <label for="email">Email</label>
             <input

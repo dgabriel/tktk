@@ -374,6 +374,28 @@
         "file": "src/index.tsx"
       },
       "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:2d272afd841ec5ab84c7011ed40b457b",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-30T13:12:09.538Z",
+      "reason": "Very low confidence (10%) and directly contradicted by evidence: npm run typecheck (tsc --noEmit) ran clean both before and after this fix, across the whole codebase. No type mismatch exists.",
+      "context": {
+        "title": "TypeScript type mismatch after removing username column",
+        "file": "src/lib/classes.ts"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:469aafc8961c168311cf9af4f99f5dd1",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-30T13:12:09.830Z",
+      "reason": "Not new -- already documented as a known, accepted gap in invites.ts's own module comment and CLAUDE.md since tktk-lfc.4: an invite that expires/is revoked without being accepted leaves its placeholder rows behind, inert but not displayed anywhere. Unrelated to this commit's username removal.",
+      "context": {
+        "title": "Orphaned placeholder user rows persist after invite expiry",
+        "file": "src/lib/invites.ts"
+      },
+      "expires_at": null
     }
   ]
 }

@@ -5,8 +5,8 @@
 import type { FC } from "hono/jsx";
 import { Layout } from "./Layout";
 
-export type InviteAcceptFieldErrors = Partial<Record<"username" | "password", string>>;
-export type InviteAcceptFormValues = { username?: string; name?: string };
+export type InviteAcceptFieldErrors = Partial<Record<"password", string>>;
+export type InviteAcceptFormValues = { name?: string };
 
 export type InviteAcceptPageProps =
   | { state: "not_found" }
@@ -124,19 +124,6 @@ export const InviteAcceptPage: FC<InviteAcceptPageProps> = (props) => {
               <label for="email-display">Email</label>
               <input type="email" id="email-display" value={email} readonly disabled />
               <p class="field-hint">This invite is for {email}.</p>
-            </div>
-            <div class="field">
-              <label for="username">Username</label>
-              <input
-                type="text"
-                id="username"
-                name="username"
-                required
-                autocomplete="username"
-                value={values.username ?? ""}
-                aria-invalid={errors.username ? "true" : undefined}
-              />
-              {errors.username && <p class="field-error">{errors.username}</p>}
             </div>
             <div class="field">
               <label for="name">

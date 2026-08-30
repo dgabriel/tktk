@@ -9,7 +9,7 @@ import { eq, and } from "drizzle-orm";
 import type { Db } from "../db";
 import { classes, classStudents, users } from "../db/schema";
 import { hashPassword } from "./password";
-import { MIN_PASSWORD_LENGTH } from "./auth";
+import { MIN_PASSWORD_LENGTH, normalizeEmail } from "./auth";
 import { isUniqueConstraintError } from "./classes";
 
 type ClassRef = { id: string; name: string };
@@ -79,14 +79,15 @@ export async function joinClassAsExistingUser(
 }
 
 // ---------------------------------------------------------------------------
-// No session: full signup (join code + username + email + password).
+// No session: full signup (join code + email + password). Email is the
+// sole identity/login field -- no separate username.
 
-export type JoinSignupInput = { joinCode: string; username: string; email: string; password: string };
+export type JoinSignupInput = { joinCode: string; email: string; password: string };
 
-export type JoinSignupFieldErrors = Partial<Record<"username" | "email" | "password", string>>;
+export type JoinSignupFieldErrors = Partial<Record<"email" | "password", string>>;
 
 export type JoinSignupResult =
-  | { ok: true; user: { id: string; username: string; email: string }; class: ClassRef }
+  | { ok: true; user: { id: string; email: string }; class: ClassRef }
   | { ok: false; status: "invalid_code" }
   | { ok: false; status: "validation"; errors: JoinSignupFieldErrors }
   | { ok: false; status: "conflict" };
@@ -99,21 +100,15 @@ export async function joinClassWithSignup(db: Db, input: JoinSignupInput): Promi
   if (!classRef) return { ok: false, status: "invalid_code" };
 
   const errors: JoinSignupFieldErrors = {};
-  const username = input.username.trim();
-  const email = input.email.trim();
+  const email = normalizeEmail(input.email);
 
-  if (!username) errors.username = "Username is required.";
   if (!email) errors.email = "Email is required.";
   if (!input.password || input.password.length < MIN_PASSWORD_LENGTH) {
     errors.password = `Password must be at least ${MIN_PASSWORD_LENGTH} characters.`;
   }
 
   if (Object.keys(errors).length === 0) {
-    const [existingUsername, existingEmail] = await Promise.all([
-      db.query.users.findFirst({ where: eq(users.username, username) }),
-      db.query.users.findFirst({ where: eq(users.email, email) }),
-    ]);
-    if (existingUsername) errors.username = "That username is already taken.";
+    const existingEmail = await db.query.users.findFirst({ where: eq(users.email, email) });
     // A different account already owns this email -- don't silently attach
     // to it. Someone who already has an account should log in and use the
     // "already logged in" join path instead (joinClassAsExistingUser).
@@ -129,17 +124,17 @@ export async function joinClassWithSignup(db: Db, input: JoinSignupInput): Promi
 
   try {
     await db.batch([
-      db.insert(users).values({ id, username, passwordHash, email, name: null, role: "student" }),
+      db.insert(users).values({ id, passwordHash, email, name: null, role: "student" }),
       db.insert(classStudents).values({ classId: classRef.id, userId: id, status: "active", joinedAt: new Date().toISOString() }),
     ]);
   } catch (err) {
-    // Concurrent signup racing past the uniqueness pre-checks above (e.g.
-    // two requests for the same username submitted at once) -- surface as a
-    // clean rejection, not an uncaught 500. Same pattern as acceptInvite's
+    // Concurrent signup racing past the uniqueness pre-check above (e.g. two
+    // requests for the same email submitted at once) -- surface as a clean
+    // rejection, not an uncaught 500. Same pattern as acceptInvite's
     // conflict handling.
     if (isUniqueConstraintError(err)) return { ok: false, status: "conflict" };
     throw err;
   }
 
-  return { ok: true, user: { id, username, email }, class: classRef };
+  return { ok: true, user: { id, email }, class: classRef };
 }

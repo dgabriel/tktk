@@ -1,6 +1,6 @@
 // Resend wrapper for transactional email (invite delivery -- CLAUDE.md:
 // Resend is still used for invite delivery, just not for auth anymore, since
-// auth is username/password now, not magic-link).
+// auth is email/password now, not magic-link).
 //
 // RESEND_API_KEY isn't provisioned in this environment yet (see
 // .dev.vars.example, still the placeholder value). Rather than block the
