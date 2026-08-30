@@ -396,6 +396,83 @@
         "file": "src/lib/invites.ts"
       },
       "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:a87509e9aebcec4e10d5e35460a0dfc3",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-30T13:21:35.273Z",
+      "reason": "Not special-cased differently from every other DB call in this codebase -- nothing anywhere blanket-catches generic D1 infra failures (createClass's db.batch(), listClassesForTeacher, etc. all have the same unhandled-exception exposure). Hono's jsonError middleware already contains an uncaught exception to a generic 500, not a process crash. Adding defensive infra-failure handling here specifically, inconsistent with the rest of the codebase, is scope beyond this fix.",
+      "context": {
+        "title": "Unhandled database errors in sessionUserExists",
+        "file": "src/lib/authGuard.ts"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:45606eaf415dba66be79c984c027e401",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-30T13:21:35.707Z",
+      "reason": "Restates the already-dismissed esbuild/drizzle-kit CVE chain (see D-0001..D-0004 in this same artifact), unrelated to this commit's actual changes.",
+      "context": {
+        "title": "Transitive vulnerable dependencies introduced via drizzle-kit",
+        "file": "src/lib/authGuard.ts"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:dd502f40177505d55ed7fe1feee3b15c",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-30T13:21:36.076Z",
+      "reason": "Deliberate, already-reasoned-about tradeoff, stated directly in the function's own comment and the commit message: one extra query at the single chokepoint every protected route already goes through, cheaper than defending every individual insert separately. Not an oversight.",
+      "context": {
+        "title": "Extra DB round‑trip on every protected route",
+        "file": "src/lib/authGuard.ts"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:571c9df818da68677e81303a1d47fbae",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-30T13:21:36.406Z",
+      "reason": "The coupling is deliberate and appropriately scoped -- goes through the sanctioned src/db.ts access point (getDb), not a new direct DB connection, per CLAUDE.md rule 1. The whole point of this fix is making the auth guard DB-aware; that's the fix, not an accident.",
+      "context": {
+        "title": "Auth guard tightly coupled to data layer",
+        "file": "src/lib/authGuard.ts"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:db3f983c808bc74fdbc271bf8f980fac",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-30T13:21:36.749Z",
+      "reason": "Descriptive, not a defect -- this is exactly the intended behavior change this commit makes, not a side effect.",
+      "context": {
+        "title": "Guard now enforces user existence beyond role check",
+        "file": "src/lib/authGuard.ts"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:2c6e71ffd825d6547648a6fbdf325a10",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-30T13:21:37.070Z",
+      "reason": "No test suite exists yet in this project by design (CLAUDE.md) -- tester subagent's work is separate future work.",
+      "context": {
+        "title": "No tests for new existence‑check behavior",
+        "file": "src/lib/authGuard.ts"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:54168a197f059c3e6573a6ab8890c0bf",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-30T13:22:42.398Z",
+      "reason": "Descriptive, not a defect -- restates the exact intended behavior change this commit makes (same as the earlier-dismissed 'Guard now enforces user existence beyond role check', just reworded).",
+      "context": {
+        "title": "Guard now performs user existence validation and cookie clearing",
+        "file": "src/lib/authGuard.ts"
+      },
+      "expires_at": null
     }
   ]
 }
