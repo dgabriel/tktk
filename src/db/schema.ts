@@ -37,7 +37,14 @@ export const classes = sqliteTable("classes", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
   description: text("description"),
-  term: text("term"),
+  // Real calendar dates (YYYY-MM-DD, what <input type="date"> submits), not
+  // the free-text "term" (e.g. "Fall 2026") the kickoff brief originally
+  // specified -- replaced per user request (tktk-lfc.11). Both optional,
+  // matching term's prior optionality. Plain text columns, not the
+  // `timestamp` helper above -- these are dates with no time component, a
+  // different concept from created_at/added_at's full timestamps.
+  startDate: text("start_date"),
+  endDate: text("end_date"),
   // Short, human-typeable join code (e.g. 6-char base32). Lives on `classes`
   // per kickoff brief §3's default (one code per class, regenerable) rather
   // than its own table — revisit if code rotation/expiry is needed later.

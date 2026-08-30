@@ -12,8 +12,23 @@ import { Layout } from "./Layout";
 import type { ClassDetail, ClassListItem } from "../lib/classes";
 import type { PendingInvite } from "../lib/invites";
 
-export type ClassFormErrors = { name?: string };
-export type ClassFormValues = { name?: string; term?: string; description?: string };
+// Parses as UTC midnight and formats in UTC -- avoids an off-by-one-day
+// shift a local-timezone parse/format could introduce for a value that's
+// a pure calendar date with no time component to begin with.
+function formatDate(iso: string): string {
+  const date = new Date(`${iso}T00:00:00Z`);
+  return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
+}
+
+function formatDateRange(start: string | null, end: string | null): string {
+  if (start && end) return `${formatDate(start)} – ${formatDate(end)}`;
+  if (start) return `Starts ${formatDate(start)}`;
+  if (end) return `Ends ${formatDate(end)}`;
+  return "—";
+}
+
+export type ClassFormErrors = { name?: string; startDate?: string; endDate?: string };
+export type ClassFormValues = { name?: string; startDate?: string; endDate?: string; description?: string };
 
 export const ClassListPage: FC<{
   classes: ClassListItem[];
@@ -32,7 +47,7 @@ export const ClassListPage: FC<{
           <thead>
             <tr>
               <th>Name</th>
-              <th>Term</th>
+              <th>Dates</th>
               <th>Join code</th>
             </tr>
           </thead>
@@ -42,7 +57,7 @@ export const ClassListPage: FC<{
                 <td>
                   <a href={`/classes/${cls.id}`}>{cls.name}</a>
                 </td>
-                <td>{cls.term ?? "—"}</td>
+                <td>{formatDateRange(cls.startDate, cls.endDate)}</td>
                 <td>{cls.joinCode}</td>
               </tr>
             ))}
@@ -66,10 +81,30 @@ export const ClassListPage: FC<{
             {errors.name && <p class="field-error">{errors.name}</p>}
           </div>
           <div class="field">
-            <label for="term">
-              Term <span class="text-muted">(optional)</span>
+            <label for="startDate">
+              Start date <span class="text-muted">(optional)</span>
             </label>
-            <input type="text" id="term" name="term" placeholder="e.g. Fall 2026" value={values.term ?? ""} />
+            <input
+              type="date"
+              id="startDate"
+              name="startDate"
+              value={values.startDate ?? ""}
+              aria-invalid={errors.startDate ? "true" : undefined}
+            />
+            {errors.startDate && <p class="field-error">{errors.startDate}</p>}
+          </div>
+          <div class="field">
+            <label for="endDate">
+              End date <span class="text-muted">(optional)</span>
+            </label>
+            <input
+              type="date"
+              id="endDate"
+              name="endDate"
+              value={values.endDate ?? ""}
+              aria-invalid={errors.endDate ? "true" : undefined}
+            />
+            {errors.endDate && <p class="field-error">{errors.endDate}</p>}
           </div>
           <div class="field">
             <label for="description">
@@ -120,7 +155,9 @@ export const ClassDetailPage: FC<{
       </p>
 
       <h1>{classDetail.name}</h1>
-      {classDetail.term && <p class="text-muted">{classDetail.term}</p>}
+      {(classDetail.startDate || classDetail.endDate) && (
+        <p class="text-muted">{formatDateRange(classDetail.startDate, classDetail.endDate)}</p>
+      )}
       {classDetail.description && <p>{classDetail.description}</p>}
 
       <div class="panel stack">

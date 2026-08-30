@@ -141,13 +141,15 @@ app.post("/classes", requireTeacher, async (c) => {
   const session = c.get("session");
   const body = await c.req.parseBody();
   const name = String(body.name ?? "").trim();
-  const term = String(body.term ?? "").trim();
+  const startDate = String(body.startDate ?? "").trim();
+  const endDate = String(body.endDate ?? "").trim();
   const description = String(body.description ?? "").trim();
 
   const db = getDb(c.env);
   const result = await createClass(db, {
     name,
-    term: term || undefined,
+    startDate: startDate || undefined,
+    endDate: endDate || undefined,
     description: description || undefined,
     createdBy: session.userId,
   });
@@ -159,7 +161,7 @@ app.post("/classes", requireTeacher, async (c) => {
         classes={classes}
         loggedInAs={session.email}
         errors={result.errors}
-        values={{ name, term, description }}
+        values={{ name, startDate, endDate, description }}
       />,
       400,
     );

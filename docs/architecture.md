@@ -76,7 +76,8 @@ erDiagram
         text id PK
         text name
         text description
-        text term
+        text startDate "optional, YYYY-MM-DD"
+        text endDate "optional, YYYY-MM-DD"
         text joinCode UK "6-char, human-typeable"
         text createdBy FK "audit only, NOT the access-control source"
     }

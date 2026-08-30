@@ -28,14 +28,26 @@ export function isUniqueConstraintError(err: unknown): boolean {
   return err instanceof Error && /unique constraint/i.test(err.message);
 }
 
+// Format an <input type="date"> submits: YYYY-MM-DD. Checks it's not just
+// shaped right but a real calendar date -- JS Date silently rolls invalid
+// ones over (e.g. "2026-02-30" becomes March 2) rather than rejecting them,
+// so round-trip through ISO and compare rather than trusting `new Date()`
+// not to throw.
+function isValidDateString(s: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return false;
+  const date = new Date(`${s}T00:00:00Z`);
+  return date.toISOString().slice(0, 10) === s;
+}
+
 export type CreateClassInput = {
   name: string;
   description?: string;
-  term?: string;
+  startDate?: string;
+  endDate?: string;
   createdBy: string;
 };
 
-export type CreateClassFieldErrors = Partial<Record<"name", string>>;
+export type CreateClassFieldErrors = Partial<Record<"name" | "startDate" | "endDate", string>>;
 
 export type CreateClassResult = { ok: true; id: string } | { ok: false; errors: CreateClassFieldErrors };
 
@@ -46,8 +58,23 @@ export type CreateClassResult = { ok: true; id: string } | { ok: false; errors: 
 // atomicity also makes it safe to retry the whole pair on a join_code
 // collision: a failed attempt never leaves an orphaned classes row behind.
 export async function createClass(db: Db, input: CreateClassInput): Promise<CreateClassResult> {
+  const errors: CreateClassFieldErrors = {};
   const name = input.name.trim();
-  if (!name) return { ok: false, errors: { name: "Class name is required." } };
+  if (!name) errors.name = "Class name is required.";
+
+  // Both dates are optional, matching the free-text term field they
+  // replace (tktk-lfc.11) -- only validated if actually provided.
+  const startDate = input.startDate?.trim() || undefined;
+  const endDate = input.endDate?.trim() || undefined;
+  if (startDate && !isValidDateString(startDate)) errors.startDate = "That's not a valid date.";
+  if (endDate && !isValidDateString(endDate)) errors.endDate = "That's not a valid date.";
+  if (startDate && endDate && !errors.startDate && !errors.endDate && endDate < startDate) {
+    // Plain string comparison is chronologically correct for zero-padded
+    // ISO YYYY-MM-DD -- no need to parse into Date objects to compare.
+    errors.endDate = "End date can't be before the start date.";
+  }
+
+  if (Object.keys(errors).length > 0) return { ok: false, errors };
 
   const id = crypto.randomUUID();
 
@@ -59,7 +86,8 @@ export async function createClass(db: Db, input: CreateClassInput): Promise<Crea
           id,
           name,
           description: input.description?.trim() || null,
-          term: input.term?.trim() || null,
+          startDate: startDate ?? null,
+          endDate: endDate ?? null,
           joinCode,
           createdBy: input.createdBy,
         }),
@@ -83,7 +111,8 @@ export type ClassListItem = {
   id: string;
   name: string;
   description: string | null;
-  term: string | null;
+  startDate: string | null;
+  endDate: string | null;
   joinCode: string;
 };
 
@@ -98,7 +127,8 @@ export async function listClassesForTeacher(db: Db, userId: string): Promise<Cla
       id: classes.id,
       name: classes.name,
       description: classes.description,
-      term: classes.term,
+      startDate: classes.startDate,
+      endDate: classes.endDate,
       joinCode: classes.joinCode,
     })
     .from(classTeachers)
@@ -110,7 +140,8 @@ export type ClassDetail = {
   id: string;
   name: string;
   description: string | null;
-  term: string | null;
+  startDate: string | null;
+  endDate: string | null;
   joinCode: string;
   teachers: Array<{
     userId: string;
@@ -169,7 +200,8 @@ export async function getClassDetailForTeacher(
     id: classRow.id,
     name: classRow.name,
     description: classRow.description,
-    term: classRow.term,
+    startDate: classRow.startDate,
+    endDate: classRow.endDate,
     joinCode: classRow.joinCode,
     teachers: teacherRows,
     students: studentRows,
