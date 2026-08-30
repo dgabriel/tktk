@@ -242,6 +242,17 @@
         "file": ".beads/interactions.jsonl"
       },
       "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:1ea50abeafffc8de39cb74b48f910bf5",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-30T12:03:39.373Z",
+      "reason": "Real, pre-existing gap (this commit didn't introduce it) -- already documented transparently as an open, unresolved decision in docs/deployment.md 'Known gap' and CLAUDE.md/kickoff brief §9.1. This is a docs-only commit; resolving the actual isolation strategy is separate, tracked work, not something to silently fix here.",
+      "context": {
+        "title": "Preview deployments share production D1 database, risking data exposure",
+        "file": "docs/deployment.md"
+      },
+      "expires_at": null
     }
   ]
 }
