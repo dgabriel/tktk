@@ -14,7 +14,7 @@ import { InviteAcceptPage } from "./views/Invites";
 import { signupTeacher, verifyLogin } from "./lib/auth";
 import { clearSessionCookie, createSessionCookie, readSession, type Variables } from "./lib/session";
 import { requireTeacher } from "./lib/authGuard";
-import { createClass, getClassDetailForTeacher, listClassesForTeacher } from "./lib/classes";
+import { addCoTeacher, createClass, getClassDetailForTeacher, listClassesForTeacher } from "./lib/classes";
 import {
   acceptInvite,
   attachInviteToExistingUser,
@@ -148,6 +148,50 @@ app.get("/classes/:id", requireTeacher, async (c) => {
   const pendingInvites = await listPendingInvites(db, classDetail.id);
 
   return c.html(<ClassDetailPage classDetail={classDetail} loggedInAs={session.email} pendingInvites={pendingInvites} />);
+});
+
+app.post("/classes/:id/teachers", requireTeacher, async (c) => {
+  const session = c.get("session");
+  const db = getDb(c.env);
+  const classId = c.req.param("id");
+
+  // Membership check, not just "is a teacher" -- must be a teacher on THIS
+  // class. Any teacher on the class may add a co-teacher (kickoff brief §2:
+  // no owner-only hierarchy), so this is the same check the invite route
+  // uses, not an owner-only one.
+  const classDetail = await getClassDetailForTeacher(db, classId, session.userId);
+  if (!classDetail) {
+    return c.redirect("/classes", 303);
+  }
+
+  const body = await c.req.parseBody();
+  const email = String(body.email ?? "").trim();
+
+  const result = await addCoTeacher(db, { classId, email });
+  const pendingInvites = await listPendingInvites(db, classId);
+
+  if (!result.ok) {
+    return c.html(
+      <ClassDetailPage
+        classDetail={classDetail}
+        loggedInAs={session.email}
+        pendingInvites={pendingInvites}
+        teacherError={result.error}
+        teacherValues={{ email }}
+      />,
+      400,
+    );
+  }
+
+  const updatedClassDetail = await getClassDetailForTeacher(db, classId, session.userId);
+  return c.html(
+    <ClassDetailPage
+      classDetail={updatedClassDetail ?? classDetail}
+      loggedInAs={session.email}
+      pendingInvites={pendingInvites}
+      teacherSuccess={`Added ${email} as a co-teacher.`}
+    />,
+  );
 });
 
 app.post("/classes/:id/invites", requireTeacher, async (c) => {

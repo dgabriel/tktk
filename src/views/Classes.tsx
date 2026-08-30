@@ -87,6 +87,7 @@ export const ClassListPage: FC<{
 
 export type InviteFormErrors = { email?: string };
 export type InviteFormValues = { email?: string };
+export type TeacherFormValues = { email?: string };
 
 export const ClassDetailPage: FC<{
   classDetail: ClassDetail;
@@ -95,7 +96,20 @@ export const ClassDetailPage: FC<{
   inviteError?: string;
   inviteSuccess?: string;
   inviteValues?: InviteFormValues;
-}> = ({ classDetail, loggedInAs, pendingInvites = [], inviteError, inviteSuccess, inviteValues = {} }) => (
+  teacherError?: string;
+  teacherSuccess?: string;
+  teacherValues?: TeacherFormValues;
+}> = ({
+  classDetail,
+  loggedInAs,
+  pendingInvites = [],
+  inviteError,
+  inviteSuccess,
+  inviteValues = {},
+  teacherError,
+  teacherSuccess,
+  teacherValues = {},
+}) => (
   <Layout title={classDetail.name} loggedInAs={loggedInAs}>
     <main class="container stack">
       <p>
@@ -134,6 +148,25 @@ export const ClassDetailPage: FC<{
             ))}
           </tbody>
         </table>
+
+        <h3>Add a co-teacher</h3>
+        {teacherSuccess && <p class="message message-success">{teacherSuccess}</p>}
+        {teacherError && <p class="message message-error">{teacherError}</p>}
+        <form method="post" action={`/classes/${classDetail.id}/teachers`} class="stack">
+          <div class="field">
+            <label for="teacher-email">Email</label>
+            <input
+              type="email"
+              id="teacher-email"
+              name="email"
+              required
+              value={teacherValues.email ?? ""}
+            />
+          </div>
+          <button type="submit" class="btn">
+            Add co-teacher
+          </button>
+        </form>
       </div>
 
       <div class="panel stack">

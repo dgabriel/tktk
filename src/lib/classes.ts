@@ -158,3 +158,50 @@ export async function getClassDetailForTeacher(
     teachers: teacherRows,
   };
 }
+
+export type AddCoTeacherResult = { ok: true } | { ok: false; error: string };
+
+// Adds an existing teacher account to a class as a co-teacher. Unlike the
+// student-invite flow (tktk-lfc.4), this has no signup-via-link step --
+// co-teachers are presumed already registered instructors, so a lookup miss
+// (or a hit against a non-teacher account) is a rejected request, not the
+// start of an invite. Any current teacher on the class may call this (kickoff
+// brief §2: no class-level hierarchy beyond owner/co-teacher) -- callers are
+// responsible for the class-membership check via getClassDetailForTeacher,
+// same as the existing /invites route.
+export async function addCoTeacher(db: Db, input: { classId: string; email: string }): Promise<AddCoTeacherResult> {
+  const email = input.email.trim();
+  if (!email) return { ok: false, error: "Email is required." };
+
+  const candidate = await db.query.users.findFirst({ where: eq(users.email, email) });
+  if (!candidate || candidate.role !== "teacher") {
+    return { ok: false, error: "No teacher account found with that email." };
+  }
+
+  const existingMembership = await db.query.classTeachers.findFirst({
+    where: and(eq(classTeachers.classId, input.classId), eq(classTeachers.userId, candidate.id)),
+  });
+  if (existingMembership) {
+    return { ok: false, error: "This person is already a teacher on this class." };
+  }
+
+  try {
+    await db.insert(classTeachers).values({
+      classId: input.classId,
+      userId: candidate.id,
+      role: "co-teacher",
+    });
+  } catch (err) {
+    // Concurrent add of the same co-teacher (double-click, two tabs) racing
+    // past the existingMembership check above -- class_teachers' composite
+    // PK (classId, userId) rejects the second insert. Same pattern as
+    // acceptInvite's conflict handling in invites.ts: surface as a clean
+    // rejection, not an uncaught 500.
+    if (isUniqueConstraintError(err)) {
+      return { ok: false, error: "This person is already a teacher on this class." };
+    }
+    throw err;
+  }
+
+  return { ok: true };
+}

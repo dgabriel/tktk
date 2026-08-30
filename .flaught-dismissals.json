@@ -286,6 +286,94 @@
         "file": "docs/roadmap.md"
       },
       "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:c555afef13d1c9c72b6d64c7923a2094",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-30T12:25:16.234Z",
+      "reason": "Not new to this route -- every POST route in the app relies on the same mitigation: session cookies are SameSite=Lax (src/lib/session.ts), which blocks the cookie on cross-site POST. No CSRF-specific finding was raised for the other POST routes (signup, login, create class, invite) built earlier this session; this is non-deterministic LLM attention landing on this route this time, not a gap specific to it.",
+      "context": {
+        "title": "Missing CSRF protection on POST /classes/:id/teachers",
+        "file": "src/index.tsx"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:e93f7be8c2a1aa090d1aebb62298b805",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-30T12:25:16.526Z",
+      "reason": "Deliberate, reasoned tradeoff from the task spec, not an oversight: this route is gated behind requireTeacher + class membership, so it's only reachable by other authenticated, already-trusted teachers (workshop colleagues), not anonymous users -- a materially different threat model than login's enumeration concern. A teacher filling this form needs to know whether they mistyped the email or it genuinely isn't registered.",
+      "context": {
+        "title": "Teacher email enumeration via detailed error messages",
+        "file": "src/lib/classes.ts"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:6dd230420d4daddf633e451ed3ce085e",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-30T12:25:16.817Z",
+      "reason": "Two small, semantically-distinct forms (invite a student vs. add a co-teacher) sharing a similar shape. Extracting a component for this now is premature abstraction for the size of the duplication -- revisit if a third similar form appears.",
+      "context": {
+        "title": "Duplicate teacher‑addition UI logic in ClassDetailPage",
+        "file": "src/views/Classes.tsx"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:02a26654ca81e90e3909bb5259f0c0a3",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-30T12:26:48.997Z",
+      "reason": "No rate limiting exists on ANY route in this app (signup, login, create class, invite) -- not specific to this endpoint. Out of scope for this MVP pass; would need dedicated infra (Cloudflare rate limiting rules or a KV counter).",
+      "context": {
+        "title": "No rate limiting on co‑teacher addition endpoint enables enumeration/brute‑force",
+        "file": "src/index.tsx"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:85f06372a8a89861c8ea577e2ae7ec91",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-30T12:26:49.290Z",
+      "reason": "Consistent with the existing pattern across the whole codebase -- signupTeacher (auth.ts) and createInvite (invites.ts) both only check non-empty, relying on the HTML type=email input for format validation, not a server-side regex. Not a gap specific to this commit.",
+      "context": {
+        "title": "Server‑side email format validation missing for co‑teacher addition",
+        "file": "src/lib/classes.ts"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:37242200f6cebf0a5ad01ca9fbeb9bbd",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-30T12:26:49.578Z",
+      "reason": "No audit logging exists anywhere in this app yet -- no logging/observability infrastructure has been decided at all. Out of scope for this MVP pass.",
+      "context": {
+        "title": "Missing audit logging for co‑teacher addition",
+        "file": "src/lib/classes.ts"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:339f88e423a8d7597a19f3707e781f10",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-30T12:26:49.868Z",
+      "reason": "No test suite exists yet in this project by design (CLAUDE.md) -- tester subagent's work is separate future work, not blocking individual feature commits.",
+      "context": {
+        "title": "No automated tests for addCoTeacher logic and error branches",
+        "file": "src/lib/classes.ts"
+      },
+      "expires_at": null
+    },
+    {
+      "fingerprint": "sha256:48041ee7d259ab0633007541687e9bf7",
+      "dismissed_by": "dgabriel@mac.mynetworksettings.com",
+      "dismissed_at": "2026-08-30T12:26:50.160Z",
+      "reason": "Low confidence (10%), and the premise is wrong: ClassDetailPage renders both the teachers list and pending-invites list together on one page, so pendingInvites must be re-fetched regardless of which form was submitted or the invites section would render stale/empty.",
+      "context": {
+        "title": "Unnecessary pending‑invites fetch after adding a co‑teacher",
+        "file": "src/index.tsx"
+      },
+      "expires_at": null
     }
   ]
 }
