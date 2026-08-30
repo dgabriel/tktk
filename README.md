@@ -17,6 +17,14 @@ npm run dev                      # wrangler dev, http://localhost:8787
 
 Log in with `teacher@tktk.test` / `password123` (seeded by `db:seed:local`, chained onto `db:migrate:local` above — see `scripts/seed-local.ts`). Re-running either command is safe; it just refreshes that one row rather than duplicating it, so the account survives the local-D1 wipes that schema changes tend to require.
 
+## Develop in Docker (recommended if the dev server keeps getting killed out from under you)
+
+```bash
+docker compose up -d --build   # first time, or after a Dockerfile/dependency change
+```
+
+That's it — leave it running. `wrangler dev` runs inside the container and watches the bind-mounted source tree, so editing files on the host hot-reloads the running Worker in place (see log line `⎔ Reloading local server...`); you never need to restart or rebuild for a routine code change. `docker compose down` only when you're done for the session; `docker compose logs -f` to tail it. `.dev.vars` is read the same way as native `npm run dev`, and local D1 state (`.wrangler/`) persists across restarts since it's on the bind-mounted host filesystem, not inside the container.
+
 ## Other commands
 
 ```bash

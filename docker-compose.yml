@@ -1,0 +1,28 @@
+# Local dev only -- `docker compose up -d` once, then leave it running.
+# wrangler dev watches the source tree and hot-reloads the Worker in place on
+# every file change; since `.:/app` bind-mounts the real source, edits made
+# on the host are picked up the same way they would be outside Docker. The
+# point of running it in a container at all is durability: this process
+# can't be killed by an unrelated `pkill` on the host, and it survives
+# whether or not any particular terminal/shell session is still open.
+#
+# Releasing a code change = just edit the files; do NOT `docker compose
+# restart`/`down` for routine changes -- that defeats the purpose and drops
+# the in-memory Worker state wrangler dev keeps between reloads. Restarting
+# is only for Dockerfile/dependency changes (`docker compose up -d --build`).
+services:
+  dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "8787:8787"
+    volumes:
+      - .:/app
+      # Anonymous volume shadows the bind mount above for this one path --
+      # node_modules must be the container's own Linux build (wrangler bundles
+      # platform-specific native binaries), not whatever's on the macOS host.
+      - /app/node_modules
+    env_file:
+      - .dev.vars
+    command: npx wrangler dev --ip 0.0.0.0
