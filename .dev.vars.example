@@ -1,9 +1,0 @@
-# Copy to .dev.vars for local `wrangler dev` (gitignored, never commit the real file).
-# In prod/preview these are set via `wrangler secret put <NAME>`, not this file.
-
-# HMAC key for signing session cookies (src/lib/session.ts). Any long random
-# string; e.g. `openssl rand -base64 32`.
-SESSION_SECRET=replace-with-a-real-random-secret
-
-# Resend API key for sending magic-link emails. Not yet provisioned.
-RESEND_API_KEY=replace-with-a-real-resend-key
