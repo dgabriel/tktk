@@ -11,7 +11,7 @@ import { WorkshopHome } from "./pages/WorkshopHome";
 function App() {
   return (
     <ViewAsProvider>
-      <BrowserRouter>
+      <BrowserRouter basename="/tktk">
         <Routes>
           <Route element={<Layout />}>
             <Route path="/" element={<WorkshopHome />} />
