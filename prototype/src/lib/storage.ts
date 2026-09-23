@@ -45,6 +45,9 @@ interface AppState {
   // bump STORAGE_KEY: older stored state simply lacks this field, and every
   // reader falls back to null via `?? null`, so it's harmless either way.
   viewingAsStudentId?: string | null;
+  // Same optional-field treatment: absent means the About-demo modal hasn't
+  // been dismissed yet, so it auto-opens; true once the user has closed it.
+  aboutDemoDismissed?: boolean;
 }
 
 function loadState(): AppState {
@@ -361,5 +364,15 @@ export function getViewingAsStudentId(): string | null {
 export function setViewingAsStudentId(studentId: string | null): void {
   const state = loadState();
   state.viewingAsStudentId = studentId;
+  saveState(state);
+}
+
+export function getAboutDemoDismissed(): boolean {
+  return loadState().aboutDemoDismissed ?? false;
+}
+
+export function setAboutDemoDismissed(): void {
+  const state = loadState();
+  state.aboutDemoDismissed = true;
   saveState(state);
 }
