@@ -1,12 +1,21 @@
 import { getState } from "../lib/storage";
 import { useViewAs } from "../lib/viewAs";
 
-export function ViewAsToggle() {
+interface ViewAsToggleProps {
+  onAboutClick?: () => void;
+}
+
+export function ViewAsToggle({ onAboutClick }: ViewAsToggleProps) {
   const { students } = getState();
   const { viewingAsStudentId, isStudentView, setViewingAsStudentId } = useViewAs();
 
   return (
     <div className={`view-as-bar${isStudentView ? " view-as-bar--active" : ""}`}>
+      {onAboutClick && (
+        <button type="button" className="about-demo-button" onClick={onAboutClick}>
+          About this demo
+        </button>
+      )}
       <label className="view-as-label">
         Viewing as
         <select

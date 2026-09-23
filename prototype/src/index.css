@@ -75,6 +75,19 @@ ul {
   padding: 0;
 }
 
+.about-demo-button {
+  margin-right: auto;
+  font-size: 0.85rem;
+  font-style: italic;
+  color: var(--gray);
+  text-decoration: underline;
+}
+
+.about-demo-button:hover,
+.about-demo-button:focus-visible {
+  color: var(--black);
+}
+
 /* view-as toggle */
 
 .view-as-bar {
@@ -117,6 +130,12 @@ ul {
 
 .view-as-bar--active .view-as-select {
   border-color: var(--white);
+}
+
+.view-as-bar--active .about-demo-button,
+.view-as-bar--active .about-demo-button:hover,
+.view-as-bar--active .about-demo-button:focus-visible {
+  color: var(--white);
 }
 
 .page {
@@ -926,6 +945,28 @@ mark.highlight.highlight--pulsing {
 
 .modal-bio {
   color: var(--gray);
+}
+
+/* about-demo modal: same chrome, but wider and left-aligned for a list */
+
+.modal--about-demo {
+  max-width: 520px;
+  text-align: left;
+}
+
+.modal--about-demo h2,
+.modal--about-demo h3 {
+  margin-top: 0;
+}
+
+.about-demo-list li {
+  padding: 0.35em 0;
+}
+
+.about-demo-note {
+  font-size: 0.85rem;
+  color: var(--gray);
+  margin-bottom: 0;
 }
 
 .modal-workshops {
