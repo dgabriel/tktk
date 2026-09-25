@@ -4,7 +4,7 @@ Prototype feedback interface for a poetry/writing-workshop mini-LMS. Built to ga
 
 ## Demo
 
-Live demo: https://dgabriel.github.io/tktk/
+Live demo: https://dawngabriel.com/tktk/
 
 Deployed automatically from `main` via GitHub Pages (see `.github/workflows/deploy-prototype.yml`).
 
